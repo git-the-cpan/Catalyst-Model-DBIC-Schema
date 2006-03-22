@@ -6,7 +6,7 @@ use NEXT;
 use UNIVERSAL::require;
 use Carp;
 
-our $VERSION = '0.08';
+our $VERSION = '0.10';
 
 __PACKAGE__->mk_classaccessor('composed_schema');
 __PACKAGE__->mk_accessors('schema');
@@ -22,12 +22,13 @@ Catalyst::Model::DBIC::Schema - DBIx::Class::Schema Model Class
     use base 'Catalyst::Model::DBIC::Schema';
 
     __PACKAGE__->config(
-        schema_class => 'Foo::SchemaClass',
-        connect_info => [ 'dbi:Pg:dbname=foodb',
-                          'postgres',
-                          '',
-                          { AutoCommit => 1 },
-                        ],
+        schema_class    => 'Foo::SchemaClass',
+        connect_info    => [ 'dbi:Pg:dbname=foodb',
+                             'postgres',
+                             '',
+                             { AutoCommit => 1 },
+                           ],
+        on_connect_do   => [ 'sql statement 1', 'sql statement 2' ],
     );
 
     1;
@@ -64,9 +65,6 @@ Catalyst::Model::DBIC::Schema - DBIx::Class::Schema Model Class
 
 =head1 DESCRIPTION
 
-NOTE: This is the first public release, there's probably a higher than
-average chance of random bugs and shortcomings: you've been warned.
-
 This is a Catalyst Model for L<DBIx::Class::Schema>-based Models.  See
 the documentation for L<Catalyst::Helper::Model::DBIC::Schema> and
 L<Catalyst::Helper::Model::DBIC::SchemaLoader> for information
@@ -95,12 +93,17 @@ This is not required if C<schema_class> already has connection information
 defined in itself (which would be the case for a Schema defined by
 L<DBIx::Class::Schema::Loader>, for instance).
 
+=item on_connect_do
+
+This is an arrayref of sql statements, which are executed on every connect.
+May not be a valid/useful argument with non-DBI-based Storages.
+
 =item storage_type
 
 Allows the use of a different C<storage_type> than what is set in your
 C<schema_class> (which in turn defaults to C<::DBI> if not set in current
-L<DBIx::Class>).  Completely optional, and probably unneccesary for most
-people, until other storage backends become available for L<DBIx::Class>.
+L<DBIx::Class>).  Completely optional, and probably unnecessary for most
+people until other storage backends become available for L<DBIx::Class>.
 
 =back
 
@@ -148,6 +151,11 @@ Shortcut for ->schema->class
 
 Shortcut for ->schema->resultset
 
+=item storage
+
+Provides an accessor for the connected schema's storage object.
+Used often for debugging and controlling transactions.
+
 =back
 
 =cut
@@ -179,8 +187,12 @@ sub new {
 
     $self->composed_schema($schema_class->compose_namespace($class));
     $self->schema($self->composed_schema->clone);
-    $self->schema->storage_type($self->{storage_type}) if $self->{storage_type};
+
+    $self->schema->storage_type($self->{storage_type})
+        if $self->{storage_type};
     $self->schema->connection(@{$self->{connect_info}});
+    $self->schema->storage->on_connect_do($self->{on_connect_do})
+        if $self->{on_connect_do};
 
     no strict 'refs';
     foreach my $moniker ($self->schema->sources) {
@@ -197,6 +209,8 @@ sub new {
 sub clone { shift->composed_schema->clone(@_); }
 
 sub connect { shift->composed_schema->connect(@_); }
+
+sub storage { shift->schema->storage(@_); }
 
 =head1 SEE ALSO
 

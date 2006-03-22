@@ -7,12 +7,13 @@ SYNOPSIS
         use base 'Catalyst::Model::DBIC::Schema';
 
         __PACKAGE__->config(
-            schema_class => 'Foo::SchemaClass',
-            connect_info => [ 'dbi:Pg:dbname=foodb',
-                              'postgres',
-                              '',
-                              { AutoCommit => 1 },
-                            ],
+            schema_class    => 'Foo::SchemaClass',
+            connect_info    => [ 'dbi:Pg:dbname=foodb',
+                                 'postgres',
+                                 '',
+                                 { AutoCommit => 1 },
+                               ],
+            on_connect_do   => [ 'sql statement 1', 'sql statement 2' ],
         );
 
         1;
@@ -48,9 +49,6 @@ SYNOPSIS
         $newconn->connection(...);
 
 DESCRIPTION
-    NOTE: This is the first public release, there's probably a higher than
-    average chance of random bugs and shortcomings: you've been warned.
-
     This is a Catalyst Model for DBIx::Class::Schema-based Models. See the
     documentation for Catalyst::Helper::Model::DBIC::Schema and
     Catalyst::Helper::Model::DBIC::SchemaLoader for information on
@@ -74,11 +72,16 @@ CONFIG PARAMETERS
         information defined in itself (which would be the case for a Schema
         defined by DBIx::Class::Schema::Loader, for instance).
 
+    on_connect_do
+        This is an arrayref of sql statements, which are executed on every
+        connect. May not be a valid/useful argument with non-DBI-based
+        Storages.
+
     storage_type
         Allows the use of a different "storage_type" than what is set in
         your "schema_class" (which in turn defaults to "::DBI" if not set in
-        current DBIx::Class). Completely optional, and probably unneccesary
-        for most people, until other storage backends become available for
+        current DBIx::Class). Completely optional, and probably unnecessary
+        for most people until other storage backends become available for
         DBIx::Class.
 
 METHODS
@@ -113,6 +116,10 @@ METHODS
 
     resultset
         Shortcut for ->schema->resultset
+
+    storage
+        Provides an accessor for the connected schema's storage object. Used
+        often for debugging and controlling transactions.
 
 SEE ALSO
     General Catalyst Stuff:
