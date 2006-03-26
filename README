@@ -12,8 +12,15 @@ SYNOPSIS
                                  'postgres',
                                  '',
                                  { AutoCommit => 1 },
+                                 { limit_dialect => 'xxx',
+                                   quote_char => q{`},
+                                   name_sep => q{@},
+                                   on_connect_do => [
+                                       'sql statement 1',
+                                       'sql statement 2',
+                                   ]
+                                 }
                                ],
-            on_connect_do   => [ 'sql statement 1', 'sql statement 2' ],
         );
 
         1;
@@ -63,19 +70,49 @@ CONFIG PARAMETERS
 
     connect_info
         This is an arrayref of connection parameters, which are specific to
-        your "storage_type". For "::DBI", which is the only supported
-        "storage_type" in DBIx::Class at the time of this writing, the 4
-        parameters are your dsn, username, password, and connect options
-        hashref.
+        your "storage_type" (see your storage type documentation for more
+        details).
 
         This is not required if "schema_class" already has connection
         information defined in itself (which would be the case for a Schema
         defined by DBIx::Class::Schema::Loader, for instance).
 
-    on_connect_do
-        This is an arrayref of sql statements, which are executed on every
-        connect. May not be a valid/useful argument with non-DBI-based
-        Storages.
+        For DBIx::Class::Storage::DBI, which is the only supported
+        "storage_type" in DBIx::Class at the time of this writing, the
+        parameters are your dsn, username, password, and connect options
+        hashref.
+
+        If you need to specify the DBIx::Class::Storage::DBI specific
+        parameter "on_connect_do", or the related "sql_maker" options
+        "limit_dialect", "quote_char", or "name_sep", you can place these
+        options into a hashref as the final element of the "connect_info"
+        arrayref. If in doubt, don't specify these options. You would know
+        it if you needed them.
+
+        Examples:
+
+            connect_info => [ 'dbi:Pg:dbname=mypgdb', 'postgres', '' ],
+            connect_info => [
+                              'dbi:SQLite:dbname=foo.db',
+                              {
+                                on_connect_do => [
+                                  'some SQL statement',
+                                  'another SQL statement',
+                                ],
+                              }
+                            ],
+            connect_info => [
+                              'dbi:Pg:dbname=mypgdb',
+                              'postgres',
+                              '',
+                              { AutoCommit => 0 },
+                              {
+                                on_connect_do => [
+                                  'some SQL statement',
+                                  'another SQL statement',
+                                ],
+                              }
+                            ],
 
     storage_type
         Allows the use of a different "storage_type" than what is set in
