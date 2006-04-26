@@ -7,7 +7,7 @@ use UNIVERSAL::require;
 use Carp;
 require DBIx::Class;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 __PACKAGE__->mk_classaccessor('composed_schema');
 __PACKAGE__->mk_accessors('schema');
@@ -365,6 +365,10 @@ L<Catalyst::Helper::Model::DBIC::SchemaLoader>
 =head1 AUTHOR
 
 Brandon L Black, C<blblack@gmail.com>
+
+=head1 SUPPORT
+
+Via the Catalyst and DBIx-Class mailing lists
 
 =head1 COPYRIGHT
 

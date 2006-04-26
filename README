@@ -229,6 +229,9 @@ SEE ALSO
 AUTHOR
     Brandon L Black, "blblack@gmail.com"
 
+SUPPORT
+    Via the Catalyst and DBIx-Class mailing lists
+
 COPYRIGHT
     This program is free software, you can redistribute it and/or modify it
     under the same terms as Perl itself.
