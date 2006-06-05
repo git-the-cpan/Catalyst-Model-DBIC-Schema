@@ -17,20 +17,20 @@ SYNOPSIS
 
           package MyApp::Schema::FilmDB::Actor;
           use base qw/DBIx::Class/
-  
+
           __PACKAGE__->load_components(qw/Core/);
           __PACKAGE__->table('actor');
-  
+
           ...
 
         and a Role in MyApp/Schema/Role.pm:
 
           package MyApp::Schema::FilmDB::Role;
           use base qw/DBIx::Class/
-  
+
           __PACKAGE__->load_components(qw/Core/);
-          __PACKAGE__->table('actor');
-  
+          __PACKAGE__->table('role');
+
           ...    
 
         Notice that the schema is in MyApp::Schema, not in MyApp::Model.
@@ -42,7 +42,7 @@ SYNOPSIS
 
           package MyApp::Model::FilmDB;
           use base qw/Catalyst::Model::DBIC::Schema/;
-  
+
           __PACKAGE__->config(
               schema_class => 'MyApp::Schema::FilmDB',
               connect_info => [
@@ -64,11 +64,11 @@ SYNOPSIS
     Authentication::Store::DBIC in MyApp.pm:
 
       package MyApp;
-  
+
       use Catalyst qw/... Authentication::Store::DBIC/;
-  
+
       ...
-  
+
       __PACKAGE__->config->{authentication}{dbic} = {
           user_class      => 'FilmDB::Actor',
           user_field      => 'name',
@@ -82,33 +82,33 @@ SYNOPSIS
 
     Some examples are given below:
 
-        # to access schema methods directly:
-        $c->model('FilmDB')->schema->source(...);
+      # to access schema methods directly:
+      $c->model('FilmDB')->schema->source(...);
 
-        # to access the source object, resultset, and class:
-        $c->model('FilmDB')->source(...);
-        $c->model('FilmDB')->resultset(...);
-        $c->model('FilmDB')->class(...);
+      # to access the source object, resultset, and class:
+      $c->model('FilmDB')->source(...);
+      $c->model('FilmDB')->resultset(...);
+      $c->model('FilmDB')->class(...);
 
-        # For resultsets, there's an even quicker shortcut:
-        $c->model('FilmDB::Actor')
-        # is the same as $c->model('FilmDB')->resultset('Actor')
+      # For resultsets, there's an even quicker shortcut:
+      $c->model('FilmDB::Actor')
+      # is the same as $c->model('FilmDB')->resultset('Actor')
 
-        # To get the composed schema for making new connections:
-        my $newconn = $c->model('FilmDB')->composed_schema->connect(...);
+      # To get the composed schema for making new connections:
+      my $newconn = $c->model('FilmDB')->composed_schema->connect(...);
 
-        # Or the same thing via a convenience shortcut:
-        my $newconn = $c->model('FilmDB')->connect(...);
+      # Or the same thing via a convenience shortcut:
+      my $newconn = $c->model('FilmDB')->connect(...);
 
-        # or, if your schema works on different storage drivers:
-        my $newconn = $c->model('FilmDB')->composed_schema->clone();
-        $newconn->storage_type('::LDAP');
-        $newconn->connection(...);
+      # or, if your schema works on different storage drivers:
+      my $newconn = $c->model('FilmDB')->composed_schema->clone();
+      $newconn->storage_type('::LDAP');
+      $newconn->connection(...);
 
-        # and again, a convenience shortcut
-        my $newconn = $c->model('FilmDB')->clone();
-        $newconn->storage_type('::LDAP');
-        $newconn->connection(...);
+      # and again, a convenience shortcut
+      my $newconn = $c->model('FilmDB')->clone();
+      $newconn->storage_type('::LDAP');
+      $newconn->connection(...);
 
 DESCRIPTION
     This is a Catalyst Model for DBIx::Class::Schema-based Models. See the
@@ -129,8 +129,8 @@ CONFIG PARAMETERS
         details).
 
         This is not required if "schema_class" already has connection
-        information defined in itself (which would be the case for a Schema
-        defined by DBIx::Class::Schema::Loader, for instance).
+        information defined inside itself (which isn't highly recommended,
+        but can be done)
 
         For DBIx::Class::Storage::DBI, which is the only supported
         "storage_type" in DBIx::Class at the time of this writing, the
@@ -146,29 +146,29 @@ CONFIG PARAMETERS
 
         Examples:
 
-            connect_info => [ 'dbi:Pg:dbname=mypgdb', 'postgres', '' ],
+          connect_info => [ 'dbi:Pg:dbname=mypgdb', 'postgres', '' ],
 
-            connect_info => [
-                              'dbi:SQLite:dbname=foo.db',
-                              {
-                                on_connect_do => [
-                                  'PRAGMA synchronous = OFF',
-                                ],
-                              }
-                            ],
+          connect_info => [
+                            'dbi:SQLite:dbname=foo.db',
+                            {
+                              on_connect_do => [
+                                'PRAGMA synchronous = OFF',
+                              ],
+                            }
+                          ],
 
-            connect_info => [
-                              'dbi:Pg:dbname=mypgdb',
-                              'postgres',
-                              '',
-                              { AutoCommit => 0 },
-                              {
-                                on_connect_do => [
-                                  'some SQL statement',
-                                  'another SQL statement',
-                                ],
-                              }
-                            ],
+          connect_info => [
+                            'dbi:Pg:dbname=mypgdb',
+                            'postgres',
+                            '',
+                            { AutoCommit => 0 },
+                            {
+                              on_connect_do => [
+                                'some SQL statement',
+                                'another SQL statement',
+                              ],
+                            }
+                          ],
 
     storage_type
         Allows the use of a different "storage_type" than what is set in
@@ -228,9 +228,6 @@ SEE ALSO
 
 AUTHOR
     Brandon L Black, "blblack@gmail.com"
-
-SUPPORT
-    Via the Catalyst and DBIx-Class mailing lists
 
 COPYRIGHT
     This program is free software, you can redistribute it and/or modify it

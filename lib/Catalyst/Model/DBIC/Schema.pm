@@ -7,7 +7,7 @@ use UNIVERSAL::require;
 use Carp;
 require DBIx::Class;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 __PACKAGE__->mk_classaccessor('composed_schema');
 __PACKAGE__->mk_accessors('schema');
@@ -38,20 +38,20 @@ Actor in MyApp/Schema/FilmDB/Actor.pm:
 
   package MyApp::Schema::FilmDB::Actor;
   use base qw/DBIx::Class/
-  
+
   __PACKAGE__->load_components(qw/Core/);
   __PACKAGE__->table('actor');
-  
+
   ...
 
 and a Role in MyApp/Schema/Role.pm:
 
   package MyApp::Schema::FilmDB::Role;
   use base qw/DBIx::Class/
-  
+
   __PACKAGE__->load_components(qw/Core/);
-  __PACKAGE__->table('actor');
-  
+  __PACKAGE__->table('role');
+
   ...    
 
 Notice that the schema is in MyApp::Schema, not in MyApp::Model. This way it's 
@@ -64,7 +64,7 @@ MyApp/Model/FilmDB.pm:
 
   package MyApp::Model::FilmDB;
   use base qw/Catalyst::Model::DBIC::Schema/;
-  
+
   __PACKAGE__->config(
       schema_class => 'MyApp::Schema::FilmDB',
       connect_info => [
@@ -88,11 +88,11 @@ You can also use it to set up DBIC authentication with
 Authentication::Store::DBIC in MyApp.pm:
 
   package MyApp;
-  
+
   use Catalyst qw/... Authentication::Store::DBIC/;
-  
+
   ...
-  
+
   __PACKAGE__->config->{authentication}{dbic} = {
       user_class      => 'FilmDB::Actor',
       user_field      => 'name',
@@ -106,33 +106,33 @@ documentation in the L<DBIx::Class> distribution.
 
 Some examples are given below:
 
-    # to access schema methods directly:
-    $c->model('FilmDB')->schema->source(...);
+  # to access schema methods directly:
+  $c->model('FilmDB')->schema->source(...);
 
-    # to access the source object, resultset, and class:
-    $c->model('FilmDB')->source(...);
-    $c->model('FilmDB')->resultset(...);
-    $c->model('FilmDB')->class(...);
+  # to access the source object, resultset, and class:
+  $c->model('FilmDB')->source(...);
+  $c->model('FilmDB')->resultset(...);
+  $c->model('FilmDB')->class(...);
 
-    # For resultsets, there's an even quicker shortcut:
-    $c->model('FilmDB::Actor')
-    # is the same as $c->model('FilmDB')->resultset('Actor')
+  # For resultsets, there's an even quicker shortcut:
+  $c->model('FilmDB::Actor')
+  # is the same as $c->model('FilmDB')->resultset('Actor')
 
-    # To get the composed schema for making new connections:
-    my $newconn = $c->model('FilmDB')->composed_schema->connect(...);
+  # To get the composed schema for making new connections:
+  my $newconn = $c->model('FilmDB')->composed_schema->connect(...);
 
-    # Or the same thing via a convenience shortcut:
-    my $newconn = $c->model('FilmDB')->connect(...);
+  # Or the same thing via a convenience shortcut:
+  my $newconn = $c->model('FilmDB')->connect(...);
 
-    # or, if your schema works on different storage drivers:
-    my $newconn = $c->model('FilmDB')->composed_schema->clone();
-    $newconn->storage_type('::LDAP');
-    $newconn->connection(...);
+  # or, if your schema works on different storage drivers:
+  my $newconn = $c->model('FilmDB')->composed_schema->clone();
+  $newconn->storage_type('::LDAP');
+  $newconn->connection(...);
 
-    # and again, a convenience shortcut
-    my $newconn = $c->model('FilmDB')->clone();
-    $newconn->storage_type('::LDAP');
-    $newconn->connection(...);
+  # and again, a convenience shortcut
+  my $newconn = $c->model('FilmDB')->clone();
+  $newconn->storage_type('::LDAP');
+  $newconn->connection(...);
 
 =head1 DESCRIPTION
 
@@ -159,8 +159,7 @@ This is an arrayref of connection parameters, which are specific to your
 C<storage_type> (see your storage type documentation for more details).
 
 This is not required if C<schema_class> already has connection information
-defined in itself (which would be the case for a Schema defined by
-L<DBIx::Class::Schema::Loader>, for instance).
+defined inside itself (which isn't highly recommended, but can be done)
 
 For L<DBIx::Class::Storage::DBI>, which is the only supported
 C<storage_type> in L<DBIx::Class> at the time of this writing, the
@@ -174,29 +173,29 @@ specify these options.  You would know it if you needed them.
 
 Examples:
 
-    connect_info => [ 'dbi:Pg:dbname=mypgdb', 'postgres', '' ],
+  connect_info => [ 'dbi:Pg:dbname=mypgdb', 'postgres', '' ],
 
-    connect_info => [
-                      'dbi:SQLite:dbname=foo.db',
-                      {
-                        on_connect_do => [
-                          'PRAGMA synchronous = OFF',
-                        ],
-                      }
-                    ],
+  connect_info => [
+                    'dbi:SQLite:dbname=foo.db',
+                    {
+                      on_connect_do => [
+                        'PRAGMA synchronous = OFF',
+                      ],
+                    }
+                  ],
 
-    connect_info => [
-                      'dbi:Pg:dbname=mypgdb',
-                      'postgres',
-                      '',
-                      { AutoCommit => 0 },
-                      {
-                        on_connect_do => [
-                          'some SQL statement',
-                          'another SQL statement',
-                        ],
-                      }
-                    ],
+  connect_info => [
+                    'dbi:Pg:dbname=mypgdb',
+                    'postgres',
+                    '',
+                    { AutoCommit => 0 },
+                    {
+                      on_connect_do => [
+                        'some SQL statement',
+                        'another SQL statement',
+                      ],
+                    }
+                  ],
 
 =item storage_type
 
@@ -294,7 +293,7 @@ sub new {
     # XXX This is temporary, until DBIx::Class::Storage::DBI supports the
     #  same syntax and we switch our requisite to that version somewhere
     #  down the line.  This syntax is already committed into DBIx::Class
-    #  dev branch post-0.06.
+    #  -current branch post-0.06.
     # At that time, this whole block can revert back to just being:
     #  $self->schema->connection(@{$self->{connect_info}});
     
@@ -365,10 +364,6 @@ L<Catalyst::Helper::Model::DBIC::SchemaLoader>
 =head1 AUTHOR
 
 Brandon L Black, C<blblack@gmail.com>
-
-=head1 SUPPORT
-
-Via the Catalyst and DBIx-Class mailing lists
 
 =head1 COPYRIGHT
 
