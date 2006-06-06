@@ -112,10 +112,8 @@ SYNOPSIS
 
 DESCRIPTION
     This is a Catalyst Model for DBIx::Class::Schema-based Models. See the
-    documentation for Catalyst::Helper::Model::DBIC::Schema and
-    Catalyst::Helper::Model::DBIC::SchemaLoader for information on
-    generating these Models via Helper scripts. The latter of the two will
-    also generated a DBIx::Class::Schema::Loader-based Schema class for you.
+    documentation for Catalyst::Helper::Model::DBIC::Schema for information
+    on generating these Models via Helper scripts.
 
 CONFIG PARAMETERS
     schema_class
@@ -223,8 +221,7 @@ SEE ALSO
     Stuff related to DBIC and this Model style:
 
     DBIx::Class, DBIx::Class::Schema, DBIx::Class::Schema::Loader,
-    Catalyst::Helper::Model::DBIC::Schema,
-    Catalyst::Helper::Model::DBIC::SchemaLoader
+    Catalyst::Helper::Model::DBIC::Schema
 
 AUTHOR
     Brandon L Black, "blblack@gmail.com"

@@ -83,14 +83,12 @@ sub mk_compclass {
 
     if(@connect_info) {
         $helper->{setup_connect_info} = 1;
-        for(@connect_info) {
+        my @helper_connect_info = @connect_info;
+        for(@helper_connect_info) {
             $_ = qq{'$_'} if $_ !~ /^\s*[[{]/;
         }
-        $helper->{connect_info} = \@connect_info;
+        $helper->{connect_info} = \@helper_connect_info;
     }
-
-    my $file = $helper->{file};
-    $helper->render_file( 'compclass', $file );
 
     if($create eq 'dynamic') {
         my @schema_parts = split(/\:\:/, $helper->{schema_class});
@@ -112,6 +110,9 @@ sub mk_compclass {
            \@connect_info,
        );
     }
+
+    my $file = $helper->{file};
+    $helper->render_file( 'compclass', $file );
 }
 
 =head1 SEE ALSO
@@ -124,8 +125,7 @@ L<Catalyst::Response>, L<Catalyst::Helper>, L<Catalyst>,
 Stuff related to DBIC and this Model style:
 
 L<DBIx::Class>, L<DBIx::Class::Schema>,
-L<DBIx::Class::Schema::Loader>, L<Catalyst::Model::DBIC::Schema>,
-L<Catalyst::Helper::Model::DBIC::SchemaLoader>
+L<DBIx::Class::Schema::Loader>, L<Catalyst::Model::DBIC::Schema>
 
 =head1 AUTHOR
 
