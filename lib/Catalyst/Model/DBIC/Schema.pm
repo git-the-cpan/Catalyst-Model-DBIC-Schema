@@ -5,9 +5,10 @@ use base qw/Catalyst::Model Class::Accessor::Fast Class::Data::Accessor/;
 use NEXT;
 use UNIVERSAL::require;
 use Carp;
+use Data::Dumper;
 require DBIx::Class;
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 __PACKAGE__->mk_classaccessor('composed_schema');
 __PACKAGE__->mk_accessors('schema');
@@ -277,7 +278,9 @@ sub new {
         }
         else {
             croak "Either ->config->{connect_info} must be defined for $class"
-                  . " or $schema_class must have connect info defined on it";
+                  . " or $schema_class must have connect info defined on it"
+		  . "Here's what we got:\n"
+		  . Dumper($self);
         }
     }
 
