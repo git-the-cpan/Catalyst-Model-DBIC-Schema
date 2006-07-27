@@ -8,7 +8,7 @@ use Carp;
 use Data::Dumper;
 require DBIx::Class;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17_01';
 
 __PACKAGE__->mk_classaccessor('composed_schema');
 __PACKAGE__->mk_accessors('schema');
@@ -290,46 +290,8 @@ sub new {
     $self->schema->storage_type($self->{storage_type})
         if $self->{storage_type};
 
-    # XXX This is temporary, until DBIx::Class::Storage::DBI supports the
-    #  same syntax and we switch our requisite to that version somewhere
-    #  down the line.  This syntax is already committed into DBIx::Class
-    #  -current branch post-0.06.
-    # At that time, this whole block can revert back to just being:
-    #  $self->schema->connection(@{$self->{connect_info}});
+    $self->schema->connection(@{$self->{connect_info}});
     
-    my $connect_info = [ @{$self->{connect_info}} ];
-    my ($on_connect_do, %sql_maker_opts);
-    if($DBIx::Class::VERSION < 0.069) {
-        my $used;
-        my $last_info = $self->{connect_info}->[-1];
-        if(ref $last_info eq 'HASH') {
-            if($on_connect_do = $last_info->{on_connect_do}) {
-              $used = 1;
-            }
-            for my $sql_maker_opt (qw/limit_dialect quote_char name_sep/) {
-              if(my $opt_val = $last_info->{$sql_maker_opt}) {
-                $used = 1;
-                $sql_maker_opts{$sql_maker_opt} = $opt_val;
-              }
-            }
-            pop(@$connect_info) if $used;
-        }
-    }
-
-    $self->schema->connection(@$connect_info);
-
-    if($DBIx::Class::VERSION < 0.069) {
-        $self->schema->storage->on_connect_do($on_connect_do)
-            if $on_connect_do;
-        foreach my $sql_maker_opt (keys %sql_maker_opts) {
-            $self->schema->storage->sql_maker->$sql_maker_opt(
-                $sql_maker_opts{$sql_maker_opt}
-            );
-        }
-    }
-
-    # XXX end of compatibility block referenced above
-
     no strict 'refs';
     foreach my $moniker ($self->schema->sources) {
         my $classname = "${class}::$moniker";
