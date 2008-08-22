@@ -23,7 +23,7 @@ SYNOPSIS
 
           ...
 
-        and a Role in MyApp/Schema/Role.pm:
+        and a Role in MyApp/Schema/FilmDB/Role.pm:
 
           package MyApp::Schema::FilmDB::Role;
           use base qw/DBIx::Class/
@@ -31,7 +31,7 @@ SYNOPSIS
           __PACKAGE__->load_components(qw/Core/);
           __PACKAGE__->table('role');
 
-          ...    
+          ...
 
         Notice that the schema is in MyApp::Schema, not in MyApp::Model.
         This way it's usable as a standalone module and you can test/run it
@@ -124,7 +124,8 @@ CONFIG PARAMETERS
     connect_info
         This is an arrayref of connection parameters, which are specific to
         your "storage_type" (see your storage type documentation for more
-        details).
+        details). If you only need one parameter (e.g. the DSN), you can
+        just pass a string instead of an arrayref.
 
         This is not required if "schema_class" already has connection
         information defined inside itself (which isn't highly recommended,
@@ -163,6 +164,27 @@ CONFIG PARAMETERS
                               ],
                             }
                           ],
+
+        Or using Config::General:
+
+            <Model::FilmDB>
+                schema_class   MyApp::Schema::FilmDB
+                connect_info   dbi:Pg:dbname=mypgdb
+                connect_info   postgres
+                connect_info
+                <connect_info>
+                    AutoCommit   0
+                    on_connect_do   some SQL statement
+                    on_connect_do   another SQL statement
+                </connect_info>
+            </Model::FilmDB>
+
+        or
+
+            <Model::FilmDB>
+                schema_class   MyApp::Schema::FilmDB
+                connect_info   dbi:SQLite:dbname=foo.db
+            </Model::FilmDB>
 
     storage_type
         Allows the use of a different "storage_type" than what is set in

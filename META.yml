@@ -1,30 +1,26 @@
---- 
-abstract: DBIx::Class::Schema Model Class
-author: Brandon L Black, C<blblack@gmail.com>
-build_requires: 
+---
+abstract: 'DBIx::Class::Schema Model Class'
+author:
+  - 'Brandon L Black, C<blblack@gmail.com>'
+build_requires:
   Test::More: 0
 distribution_type: module
-generated_by: Module::Install version 0.670
+generated_by: 'Module::Install version 0.77'
 license: perl
-meta-spec: 
-  url: http://module-build.sourceforge.net/META-spec-v1.3.html
-  version: 1.3
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
 name: Catalyst-Model-DBIC-Schema
-no_index: 
-  directory: 
+no_index:
+  directory:
     - inc
     - t
-provides: 
-  Catalyst::Helper::Model::DBIC::Schema: 
-    file: lib/Catalyst/Helper/Model/DBIC/Schema.pm
-    version: 0.20
-  Catalyst::Model::DBIC::Schema: 
-    file: lib/Catalyst/Model/DBIC/Schema.pm
-    version: 0.20
-requires: 
+requires:
   Catalyst::Runtime: 5.70
   Class::Accessor::Fast: 0.22
   Class::Data::Accessor: 0.02
   DBIx::Class: 0.07006
   UNIVERSAL::require: 0.10
-version: 0.20
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.21

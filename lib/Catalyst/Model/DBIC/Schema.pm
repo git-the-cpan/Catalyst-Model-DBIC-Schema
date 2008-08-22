@@ -3,7 +3,7 @@ package Catalyst::Model::DBIC::Schema;
 use strict;
 use warnings;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 use base qw/Catalyst::Model Class::Accessor::Fast Class::Data::Accessor/;
 use NEXT;
@@ -47,7 +47,7 @@ Actor in MyApp/Schema/FilmDB/Actor.pm:
 
   ...
 
-and a Role in MyApp/Schema/Role.pm:
+and a Role in MyApp/Schema/FilmDB/Role.pm:
 
   package MyApp::Schema::FilmDB::Role;
   use base qw/DBIx::Class/
@@ -156,7 +156,9 @@ C<Catalyst::Model::> namespace.  This parameter is required.
 =item connect_info
 
 This is an arrayref of connection parameters, which are specific to your
-C<storage_type> (see your storage type documentation for more details).
+C<storage_type> (see your storage type documentation for more details). 
+If you only need one parameter (e.g. the DSN), you can just pass a string 
+instead of an arrayref.
 
 This is not required if C<schema_class> already has connection information
 defined inside itself (which isn't highly recommended, but can be done)
@@ -193,6 +195,28 @@ Examples:
                       ],
                     }
                   ],
+
+Or using L<Config::General>:
+
+    <Model::FilmDB>
+        schema_class   MyApp::Schema::FilmDB
+        connect_info   dbi:Pg:dbname=mypgdb
+        connect_info   postgres
+        connect_info
+        <connect_info>
+            AutoCommit   0
+            on_connect_do   some SQL statement
+            on_connect_do   another SQL statement
+        </connect_info>
+    </Model::FilmDB>
+
+or
+
+    <Model::FilmDB>
+        schema_class   MyApp::Schema::FilmDB
+        connect_info   dbi:SQLite:dbname=foo.db
+    </Model::FilmDB>
+
 
 =item storage_type
 
@@ -289,7 +313,11 @@ sub new {
     $self->schema->storage_type($self->{storage_type})
         if $self->{storage_type};
 
-    $self->schema->connection(@{$self->{connect_info}});
+    $self->schema->connection( 
+        ref $self->{connect_info} eq 'ARRAY' ? 
+        @{$self->{connect_info}} : 
+        $self->{connect_info}
+    );
     
     no strict 'refs';
     foreach my $moniker ($self->schema->sources) {
