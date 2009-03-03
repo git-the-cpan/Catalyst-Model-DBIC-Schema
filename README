@@ -55,8 +55,9 @@ SYNOPSIS
 
         See below for a full list of the possible config parameters.
 
-    Now you have a working Model, accessing your separate DBIC Schema. Which
-    can be used/accessed in the normal Catalyst manner, via $c->model():
+    Now you have a working Model which accesses your separate DBIC Schema.
+    This can be used/accessed in the normal Catalyst manner, via
+    $c->model():
 
       my $actor = $c->model('FilmDB::Actor')->find(1);
 
@@ -75,10 +76,10 @@ SYNOPSIS
           password_field  => 'password'
       }
 
-    "$c->model()" returns a DBIx::Class::ResultSet for the source name
-    parameter passed. To find out more about which methods can be called on
-    a ResultSet, or how to add your own methods to it, please see the
-    ResultSet documentation in the DBIx::Class distribution.
+    "$c->model('Schema::Source')" returns a DBIx::Class::ResultSet for the
+    source name parameter passed. To find out more about which methods can
+    be called on a ResultSet, or how to add your own methods to it, please
+    see the ResultSet documentation in the DBIx::Class distribution.
 
     Some examples are given below:
 
@@ -114,6 +115,43 @@ DESCRIPTION
     This is a Catalyst Model for DBIx::Class::Schema-based Models. See the
     documentation for Catalyst::Helper::Model::DBIC::Schema for information
     on generating these Models via Helper scripts.
+
+    When your Catalyst app starts up, a thin Model layer is created as an
+    interface to your DBIC Schema. It should be clearly noted that the model
+    object returned by "$c->model('FilmDB')" is NOT itself a DBIC schema or
+    resultset object, but merely a wrapper proving methods to access the
+    underlying schema.
+
+    In addition to this model class, a shortcut class is generated for each
+    source in the schema, allowing easy and direct access to a resultset of
+    the corresponding type. These generated classes are even thinner than
+    the model class, providing no public methods but simply hooking into
+    Catalyst's model() accessor via the ACCEPT_CONTEXT mechanism. The
+    complete contents of each generated class is roughly equivalent to the
+    following:
+
+      package MyApp::Model::FilmDB::Actor
+      sub ACCEPT_CONTEXT {
+          my ($self, $c) = @_;
+          $c->model('FilmDB')->resultset('Actor');
+      }
+
+    In short, there are three techniques available for obtaining a DBIC
+    resultset object:
+
+      # the long way
+      my $rs = $c->model('FilmDB')->schema->resultset('Actor');
+
+      # using the shortcut method on the model object
+      my $rs = $c->model('FilmDB')->resultset('Actor');
+
+      # using the generated class directly
+      my $rs = $c->model('FilmDB::Actor');
+
+    In order to add methods to a DBIC resultset, you cannot simply add them
+    to the source (row, table) definition class; you must define a separate
+    custom resultset class. See "Predefined searches" in
+    DBIx::Class::Manual::Cookbook for more info.
 
 CONFIG PARAMETERS
     schema_class

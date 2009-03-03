@@ -8,12 +8,13 @@ requires 'Catalyst::Runtime'     => '5.70';
 requires 'UNIVERSAL::require'    => '0.10';
 requires 'Class::Data::Accessor' => '0.02';
 requires 'Class::Accessor::Fast' => '0.22';
+requires 'MRO::Compat';
 test_requires 'Test::More';
 
 feature 'Catalyst::Helper support',
     -default                      => 0,
     'Catalyst::Devel'             => '1.0',
-    'DBIx::Class::Schema::Loader' => '0.03012';
+    'DBIx::Class::Schema::Loader' => '0.04005';
 
 if(-e 'MANIFEST.SKIP') {
     system("pod2text lib/Catalyst/Model/DBIC/Schema.pm > README");

@@ -59,6 +59,11 @@ Use of either of the C<create=> options requires L<DBIx::Class::Schema::Loader>.
   #  and a Model which references it:
   script/myapp_create.pl model CatalystModelName DBIC::Schema MyApp::SchemaClass create=static dbi:mysql:foodb myuname mypass
 
+  # Same, but with extra Schema::Loader args (separate multiple values by commas):
+  script/myapp_create.pl model CatalystModelName DBIC::Schema MyApp::SchemaClass create=static db_schema=foodb components=Foo,Bar exclude='^wibble|wobble$' dbi:Pg:dbname=foodb myuname mypass
+
+  # See DBIx::Class::Schema::Loader::Base for list of options
+
   # Create a dynamic DBIx::Class::Schema::Loader-based Schema,
   #  and a Model which references it:
   script/myapp_create.pl model CatalystModelName DBIC::Schema MyApp::SchemaClass create=dynamic dbi:mysql:foodb myuname mypass
@@ -86,6 +91,17 @@ sub mk_compclass {
     if($connect_info[0] && $connect_info[0] =~ /^create=(dynamic|static)$/) {
         $create = $1;
         shift @connect_info;
+    }
+
+    my %extra_args;
+    while (@connect_info && $connect_info[0] !~ /^dbi:/) {
+        my ($key, $val) = split /=/, shift(@connect_info);
+
+        if ((my @vals = split /,/ => $val) > 1) {
+            $extra_args{$key} = \@vals;
+        } else {
+            $extra_args{$key} = $val;
+        }
     }
 
     if(@connect_info) {
@@ -122,9 +138,48 @@ sub mk_compclass {
             $num++;
         }
 
+# Check if we need to be backward-compatible.
+        my $compatible = 0;
+
+        my @schema_pm   = split '::', $schema_class;
+        $schema_pm[-1] .= '.pm';
+        my $schema_file = File::Spec->catfile($helper->{base}, 'lib', @schema_pm);
+
+        if (-f $schema_file) {
+            my $schema_code = do { local (@ARGV, $/) = $schema_file; <> };
+            $compatible = 1 if $schema_code =~ /->load_classes/;
+        }
+
+        my @components = $compatible ? () : ('InflateColumn::DateTime');
+
+        if (exists $extra_args{components}) {
+            $extra_args{components} = [ $extra_args{components} ]
+                unless ref $extra_args{components};
+
+            push @components, @{ delete $extra_args{components} };
+        }
+
+        for my $re_opt (qw/constraint exclude/) {
+            $extra_args{$re_opt} = qr/$extra_args{$re_opt}/
+                if exists $extra_args{$re_opt};
+        }
+
+        if (exists $extra_args{moniker_map}) {
+            die "The moniker_map option is not currently supported by this helper, please write your own DBIx::Class::Schema::Loader script if you need it."
+        }
+
         make_schema_at(
             $schema_class,
-            { relationships => 1 },
+            {
+                relationships => 1,
+                (%extra_args ? %extra_args : ()),
+                (!$compatible ? (
+                    use_namespaces => 1
+                ) : ()),
+                (@components ? (
+                    components => \@components
+                ) : ())
+            },
             \@loader_connect_info,
         );
     }
