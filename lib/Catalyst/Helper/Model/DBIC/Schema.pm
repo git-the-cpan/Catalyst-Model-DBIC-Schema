@@ -2,8 +2,9 @@ package Catalyst::Helper::Model::DBIC::Schema;
 
 use strict;
 use warnings;
+no warnings 'uninitialized';
 
-our $VERSION = '0.21';
+our $VERSION = '0.23';
 
 use Carp;
 use UNIVERSAL::require;
@@ -14,7 +15,7 @@ Catalyst::Helper::Model::DBIC::Schema - Helper for DBIC Schema Models
 
 =head1 SYNOPSIS
 
-  script/create.pl model CatalystModelName DBIC::Schema MyApp::SchemaClass [ create=dynamic | create=static ] [ connect_info arguments ]
+  script/create.pl model CatalystModelName DBIC::Schema MyApp::SchemaClass [ create=dynamic | create=static ] [ Schema::Loader opts ] [ connect_info arguments ]
 
 =head1 DESCRIPTION
 

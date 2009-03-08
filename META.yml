@@ -18,10 +18,12 @@ no_index:
 requires:
   Catalyst::Runtime: 5.70
   Class::Accessor::Fast: 0.22
+  Class::C3: 0.20
+  Class::C3::XS: 0.08
   Class::Data::Accessor: 0.02
   DBIx::Class: 0.07006
   MRO::Compat: 0
   UNIVERSAL::require: 0.10
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.22
+version: 0.23

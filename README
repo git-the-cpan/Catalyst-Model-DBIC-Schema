@@ -31,7 +31,7 @@ SYNOPSIS
           __PACKAGE__->load_components(qw/Core/);
           __PACKAGE__->table('role');
 
-          ...
+          ...    
 
         Notice that the schema is in MyApp::Schema, not in MyApp::Model.
         This way it's usable as a standalone module and you can test/run it
