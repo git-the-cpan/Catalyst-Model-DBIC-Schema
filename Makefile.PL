@@ -1,30 +1,16 @@
-use inc::Module::Install 0.65;
+use inc::Module::Install 0.87;
 
 name 'Catalyst-Model-DBIC-Schema';
-all_from 'lib/Catalyst/Model/DBIC/Schema.pm';
+all_from 'lib/Catalyst/Plugin/PluginLoader.pm';
 
-requires 'DBIx::Class'           => '0.07006';
-requires 'Catalyst::Runtime'     => '5.70';
-requires 'UNIVERSAL::require'    => '0.10';
-requires 'Class::Data::Accessor' => '0.02';
-requires 'Class::Accessor::Fast' => '0.22';
-
+requires 'Catalyst::Runtime' => '5.80002';
 requires 'MRO::Compat';
+requires 'Scalar::Util';
 
-if($] < 5.009_005) {
-    requires 'Class::C3::XS' => '0.08';
-    requires 'Class::C3' => '0.20';
-}
-
-test_requires 'Test::More';
-
-feature 'Catalyst::Helper support',
-    -default                      => 0,
-    'Catalyst::Devel'             => '1.0',
-    'DBIx::Class::Schema::Loader' => '0.04005';
+build_requires 'Test::More';
 
 if(-e 'MANIFEST.SKIP') {
-    system("pod2text lib/Catalyst/Model/DBIC/Schema.pm > README");
+    system("pod2text lib/Catalyst/Plugin/PluginLoader.pm > README");
 }
 
 auto_provides;
