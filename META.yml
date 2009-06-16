@@ -1,14 +1,15 @@
 ---
-abstract: ~
+abstract: 'DBIx::Class::Schema Model Class'
 author:
-  - 'Ash Berlin, C<ash at cpan.org>'
+  - 'Brandon L Black, C<blblack at gmail.com>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
+  Test::Exception: 0
   Test::More: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.87'
+generated_by: 'Module::Install version 0.91'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,13 +20,27 @@ no_index:
     - inc
     - t
 provides:
-  Catalyst::Plugin::PluginLoader:
-    file: lib/Catalyst/Plugin/PluginLoader.pm
-    version: 0.01
+  Catalyst::Helper::Model::DBIC::Schema:
+    file: lib/Catalyst/Helper/Model/DBIC/Schema.pm
+    version: 0.24
+  Catalyst::Model::DBIC::Schema:
+    file: lib/Catalyst/Model/DBIC/Schema.pm
+    version: 0.24
+  Catalyst::TraitFor::Model::DBIC::Schema::Caching:
+    file: lib/Catalyst/TraitFor/Model/DBIC/Schema/Caching.pm
+  Catalyst::TraitFor::Model::DBIC::Schema::Replicated:
+    file: lib/Catalyst/TraitFor/Model/DBIC/Schema/Replicated.pm
 requires:
-  Catalyst::Runtime: 5.80002
-  MRO::Compat: 0
-  Scalar::Util: 0
+  Carp::Clan: 0
+  Catalyst::Runtime: 5.80005
+  CatalystX::Component::Traits: 0.03
+  DBIx::Class: 0.08107
+  List::MoreUtils: 0
+  Moose: 0
+  Moose::Autobox: 0
+  MooseX::Types: 0
+  namespace::autoclean: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+  repository: http://dev.catalyst.perl.org/repos/Catalyst/trunk/Catalyst-Model-DBIC-Schema/
+version: 0.24

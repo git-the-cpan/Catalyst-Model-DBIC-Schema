@@ -1,18 +1,42 @@
-use inc::Module::Install 0.87;
+use inc::Module::Install 0.91;
 
 name 'Catalyst-Model-DBIC-Schema';
-all_from 'lib/Catalyst/Plugin/PluginLoader.pm';
+all_from 'lib/Catalyst/Model/DBIC/Schema.pm';
 
-requires 'Catalyst::Runtime' => '5.80002';
-requires 'MRO::Compat';
-requires 'Scalar::Util';
+requires 'DBIx::Class'           => '0.08107';
+requires 'Catalyst::Runtime'     => '5.80005';
+requires 'CatalystX::Component::Traits' => '0.03';
+requires 'Moose';
+requires 'Moose::Autobox';
+requires 'MooseX::Types';
+requires 'namespace::autoclean';
+requires 'Carp::Clan';
+requires 'List::MoreUtils';
 
-build_requires 'Test::More';
+test_requires 'Test::More';
+test_requires 'Test::Exception';
+
+feature 'Catalyst::Helper support',
+    -default                      => 0,
+    'Catalyst::Devel'             => '1.0',
+    'Tie::IxHash'                 => 0,
+    'DBIx::Class::Schema::Loader' => '0.04005';
+
+feature 'Caching support',
+    -default                      => 0,
+    'DBIx::Class::Cursor::Cached' => 0;
+
+feature 'Replication support',
+    -default                   => 0,
+    'MooseX::AttributeHelpers' => 0,
+    'Hash::Merge'              => 0;
 
 if(-e 'MANIFEST.SKIP') {
-    system("pod2text lib/Catalyst/Plugin/PluginLoader.pm > README");
+    system("pod2text lib/Catalyst/Model/DBIC/Schema.pm > README");
 }
 
 auto_provides;
 auto_install;
+resources repository => 'http://dev.catalyst.perl.org/repos/Catalyst/trunk/Catalyst-Model-DBIC-Schema/';
+
 WriteAll;
