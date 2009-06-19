@@ -4,7 +4,7 @@ use namespace::autoclean;
 use Moose;
 no warnings 'uninitialized';
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 
 use Carp;
 use Tie::IxHash ();
@@ -400,7 +400,7 @@ sub _get_dsn_user_pass {
 
     if ($dsn =~ /sqlite/i) {
         ($user, $password) = ('', '');
-        shift @$connect_info while $connect_info->[0] eq '';
+        shift @$connect_info while @$connect_info and $connect_info->[0] eq '';
     } else {
         ($user, $password) = splice @$connect_info, 0, 2;
     }
