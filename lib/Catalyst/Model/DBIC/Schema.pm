@@ -5,7 +5,7 @@ use mro 'c3';
 extends 'Catalyst::Model';
 with 'CatalystX::Component::Traits';
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 
 use namespace::autoclean;
 use Carp::Clan '^Catalyst::Model::DBIC::Schema';
@@ -442,7 +442,7 @@ has schema_class => (
 
 has storage_type => (is => 'rw', isa => Str);
 
-has connect_info => (is => 'ro', isa => ConnectInfo, coerce => 1);
+has connect_info => (is => 'rw', isa => ConnectInfo, coerce => 1);
 
 has model_name => (
     is => 'ro',
