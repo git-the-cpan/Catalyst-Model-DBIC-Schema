@@ -168,6 +168,8 @@ DESCRIPTION
     DBIx::Class::Manual::Cookbook for more info.
 
 CONFIG PARAMETERS
+    Any options in your config not listed here are passed to your schema.
+
   schema_class
     This is the classname of your DBIx::Class::Schema Schema. It needs to be
     findable in @INC, but it does not need to be inside the
@@ -231,6 +233,7 @@ CONFIG PARAMETERS
                 on_connect_do   some SQL statement
                 on_connect_do   another SQL statement
             </connect_info>
+            user_defined_schema_accessor foo
         </Model::FilmDB>
 
     or
@@ -244,14 +247,14 @@ CONFIG PARAMETERS
 
       Model::MyDB:
           schema_class: MyDB
+          traits: Caching
           connect_info:
               dsn: dbi:Oracle:mydb
               user: mtfnpy
               password: mypass
               LongReadLen: 1000000
               LongTruncOk: 1
-              on_connect_do: [ "alter session set nls_date_format = 'YYYY-MM-DD HH24:MI:SS'" ]
-              cursor_class: 'DBIx::Class::Cursor::Cached'
+              on_connect_call: 'datetime_setup'
               quote_char: '"'
 
     The old arrayref style with hashrefs for DBI then DBIx::Class options is
@@ -340,6 +343,15 @@ ATTRIBUTES FROM MooseX::Traits::Pluggable
     Traits you used resolved to full class names.
 
 METHODS
+    Methods not listed here are delegated to the connected schema used by
+    the model instance, so the following are equivalent:
+
+        $c->model('DB')->schema->my_accessor('foo');
+        # or
+        $c->model('DB')->my_accessor('foo');
+
+    Methods on the model take precedence over schema methods.
+
   new
     Instantiates the Model based on the above-documented ->config
     parameters. The only required parameter is "schema_class".
@@ -378,8 +390,8 @@ METHODS
     often for debugging and controlling transactions.
 
   setup
-    Called at "BUILD"> time before configuration, but after "connect_info"
-    is set. To do something after configuuration use "after BUILD =>".
+    Called at "BUILD" time before configuration, but after "connect_info" is
+    set. To do something after configuuration use "after BUILD =>".
 
   ACCEPT_CONTEXT
     Point of extension for doing things at "$c->model" time with context,
@@ -395,7 +407,8 @@ SEE ALSO
     Stuff related to DBIC and this Model style:
 
     DBIx::Class, DBIx::Class::Schema, DBIx::Class::Schema::Loader,
-    Catalyst::Helper::Model::DBIC::Schema, MooseX::Object::Pluggable
+    Catalyst::Helper::Model::DBIC::Schema, CatalystX::Component::Traits,
+    MooseX::Traits::Pluggable
 
     Traits:
 
@@ -403,11 +416,10 @@ SEE ALSO
     Catalyst::TraitFor::Model::DBIC::Schema::Replicated
 
 AUTHOR
-    Brandon L Black, "blblack at gmail.com"
+    Brandon L Black "blblack at gmail.com"
 
-    Contributors:
-
-    Rafael Kitover, "rkitover at cpan.org"
+CONTRIBUTORS
+    caelum: Rafael Kitover "rkitover at cpan.org"
 
 COPYRIGHT
     This program is free software, you can redistribute it and/or modify it

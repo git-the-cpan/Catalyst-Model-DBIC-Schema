@@ -2,7 +2,6 @@ package Catalyst::TraitFor::Model::DBIC::Schema::Replicated;
 
 use namespace::autoclean;
 use Moose::Role;
-use Moose::Autobox;
 use Carp::Clan '^Catalyst::Model::DBIC::Schema';
 
 use Catalyst::Model::DBIC::Schema::Types qw/ConnectInfos LoadedClass/;
@@ -118,14 +117,14 @@ sub BUILD {}
 after BUILD => sub {
     my $self = shift;
 
-    $self->storage->connect_replicants(map [ $_ ], $self->replicants->flatten);
+    $self->storage->connect_replicants(map [ $_ ], @{ $self->replicants });
 };
 
 =head1 SEE ALSO
 
 L<Catalyst::Model::DBIC::Schema>, L<DBIx::Class>,
 L<DBIx::Class::Storage::DBI::Replicated>,
-L<Cache::FastMmap>, L<DBIx::Class::Cursor::Cached>
+L<Catalyst::TraitFor::Model::DBIC::Schema::Caching>
 
 =head1 AUTHOR
 

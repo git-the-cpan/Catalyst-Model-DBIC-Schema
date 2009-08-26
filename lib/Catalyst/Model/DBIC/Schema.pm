@@ -5,13 +5,13 @@ use mro 'c3';
 extends 'Catalyst::Model';
 with 'CatalystX::Component::Traits';
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
+$VERSION = eval $VERSION;
 
 use namespace::autoclean;
 use Carp::Clan '^Catalyst::Model::DBIC::Schema';
 use Data::Dumper;
 use DBIx::Class ();
-use Moose::Autobox;
 
 use Catalyst::Model::DBIC::Schema::Types
     qw/ConnectInfo LoadedClass/;
@@ -199,6 +199,8 @@ for more info.
 
 =head1 CONFIG PARAMETERS
 
+Any options in your config not listed here are passed to your schema.
+
 =head2 schema_class
 
 This is the classname of your L<DBIx::Class::Schema> Schema.  It needs
@@ -262,6 +264,7 @@ Or using L<Config::General>:
             on_connect_do   some SQL statement
             on_connect_do   another SQL statement
         </connect_info>
+        user_defined_schema_accessor foo
     </Model::FilmDB>
 
 or
@@ -275,14 +278,14 @@ Or using L<YAML>:
 
   Model::MyDB:
       schema_class: MyDB
+      traits: Caching
       connect_info:
           dsn: dbi:Oracle:mydb
           user: mtfnpy
           password: mypass
           LongReadLen: 1000000
           LongTruncOk: 1
-          on_connect_do: [ "alter session set nls_date_format = 'YYYY-MM-DD HH24:MI:SS'" ]
-          cursor_class: 'DBIx::Class::Cursor::Cached'
+          on_connect_call: 'datetime_setup'
 	  quote_char: '"'
 
 The old arrayref style with hashrefs for L<DBI> then L<DBIx::Class> options is also
@@ -384,6 +387,15 @@ Traits you used resolved to full class names.
 
 =head1 METHODS
 
+Methods not listed here are delegated to the connected schema used by the model
+instance, so the following are equivalent:
+
+    $c->model('DB')->schema->my_accessor('foo');
+    # or
+    $c->model('DB')->my_accessor('foo');
+
+Methods on the model take precedence over schema methods.
+
 =head2 new
 
 Instantiates the Model based on the above-documented ->config parameters.
@@ -431,8 +443,6 @@ Used often for debugging and controlling transactions.
 
 =cut
 
-has schema => (is => 'rw', isa => 'DBIx::Class::Schema');
-
 has schema_class => (
     is => 'ro',
     isa => LoadedClass,
@@ -459,7 +469,7 @@ has _default_cursor_class => (
 );
 
 sub BUILD {
-    my $self = shift;
+    my ($self, $args) = @_;
     my $class = $self->_original_class_name;
     my $schema_class = $self->schema_class;
 
@@ -485,7 +495,17 @@ sub BUILD {
 
     $self->composed_schema($schema_class->compose_namespace($class));
 
+    $self->meta->make_mutable;
+    $self->meta->add_attribute('schema',
+        is => 'rw',
+        isa => 'DBIx::Class::Schema',
+        handles => $self->_delegates
+    );
+    $self->meta->make_immutable;
+
     $self->schema($self->composed_schema->clone);
+
+    $self->_pass_options_to_schema($args);
 
     $self->schema->storage_type($self->storage_type)
         if $self->storage_type;
@@ -499,13 +519,9 @@ sub clone { shift->composed_schema->clone(@_); }
 
 sub connect { shift->composed_schema->connect(@_); }
 
-sub storage { shift->schema->storage(@_); }
-
-sub resultset { shift->schema->resultset(@_); }
-
 =head2 setup
 
-Called at C<BUILD>> time before configuration, but after L</connect_info> is
+Called at C<BUILD> time before configuration, but after L</connect_info> is
 set. To do something after configuuration use C<< after BUILD => >>.
 
 =cut
@@ -573,6 +589,55 @@ sub _build_model_name {
     return $model_name;
 }
 
+sub _delegates {
+    my $self = shift;
+
+    my $schema_meta = Class::MOP::Class->initialize($self->schema_class);
+    my @schema_methods = $schema_meta->get_all_method_names;
+
+# combine with any already added by other schemas
+    my @handles = eval {
+        @{ $self->meta->find_attribute_by_name('schema')->handles }
+    };
+
+# now kill the attribute, otherwise add_attribute in BUILD will not do the right
+# thing (it clears the handles for some reason.) May be a Moose bug.
+    eval { $self->meta->remove_attribute('schema') };
+
+    my %schema_methods;
+    @schema_methods{ @schema_methods, @handles } = ();
+    @schema_methods = keys %schema_methods;
+
+    my @my_methods = $self->meta->get_all_method_names;
+    my %my_methods;
+    @my_methods{@my_methods} = ();
+
+    my @delegates;
+    for my $method (@schema_methods) {
+        push @delegates, $method unless exists $my_methods{$method};
+    }
+
+    return \@delegates;
+}
+
+sub _pass_options_to_schema {
+    my ($self, $args) = @_;
+
+    my @attributes = map {
+        $_->init_arg || ()
+    } $self->meta->get_all_attributes;
+
+    my %attributes;
+    @attributes{@attributes} = ();
+
+    for my $opt (keys %$args) {
+        if (not exists $attributes{$opt}) {
+            next unless $self->schema->can($opt);
+            $self->schema->$opt($self->{$opt});
+        }
+    }
+}
+
 __PACKAGE__->meta->make_immutable;
 
 =head1 SEE ALSO
@@ -586,7 +651,7 @@ Stuff related to DBIC and this Model style:
 
 L<DBIx::Class>, L<DBIx::Class::Schema>,
 L<DBIx::Class::Schema::Loader>, L<Catalyst::Helper::Model::DBIC::Schema>,
-L<MooseX::Object::Pluggable>
+L<CatalystX::Component::Traits>, L<MooseX::Traits::Pluggable>
 
 Traits:
 
@@ -595,11 +660,11 @@ L<Catalyst::TraitFor::Model::DBIC::Schema::Replicated>
 
 =head1 AUTHOR
 
-Brandon L Black, C<blblack at gmail.com>
+Brandon L Black C<blblack at gmail.com>
 
-Contributors:
+=head1 CONTRIBUTORS
 
-Rafael Kitover, C<rkitover at cpan.org>
+caelum: Rafael Kitover C<rkitover at cpan.org>
 
 =head1 COPYRIGHT
 

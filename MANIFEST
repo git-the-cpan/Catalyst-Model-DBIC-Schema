@@ -25,6 +25,7 @@ t/05testapp.t
 t/06c3_issues.t
 t/07connect_info.t
 t/08helper.t
+t/09schema_options.t
 t/lib/AnotherSchemaClass.pm
 t/lib/AnotherSchemaClass/Result/Users.pm
 t/lib/ASchemaClass.pm
