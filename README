@@ -421,7 +421,9 @@ AUTHOR
 CONTRIBUTORS
     caelum: Rafael Kitover "rkitover at cpan.org"
 
+    Dan Dascalescu "dandv at cpan.org"
+
 COPYRIGHT
-    This program is free software, you can redistribute it and/or modify it
+    This program is free software. You can redistribute it and/or modify it
     under the same terms as Perl itself.
 
