@@ -31,7 +31,7 @@ SYNOPSIS
           __PACKAGE__->load_components(qw/Core/);
           __PACKAGE__->table('role');
 
-          ...
+          ...    
 
         Notice that the schema is in MyApp::Schema, not in MyApp::Model.
         This way it's usable as a standalone module and you can test/run it
@@ -432,6 +432,10 @@ CONTRIBUTORS
     Aran Deltac "bluefeet@cpan.org"
 
 COPYRIGHT
+    Copyright (c) 2006 - 2009 the Catalyst::Model::DBIC::Schema "AUTHOR" and
+    "CONTRIBUTORS" as listed above.
+
+LICENSE
     This program is free software. You can redistribute it and/or modify it
     under the same terms as Perl itself.
 

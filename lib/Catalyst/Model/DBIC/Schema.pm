@@ -5,7 +5,7 @@ use mro 'c3';
 extends 'Catalyst::Model';
 with 'CatalystX::Component::Traits';
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 $VERSION = eval $VERSION;
 
 use namespace::autoclean;
@@ -689,6 +689,12 @@ Dan Dascalescu C<dandv at cpan.org>
 Aran Deltac C<bluefeet@cpan.org>
 
 =head1 COPYRIGHT
+
+Copyright (c) 2006 - 2009
+the Catalyst::Model::DBIC::Schema L</AUTHOR> and L</CONTRIBUTORS>
+as listed above.
+
+=head1 LICENSE
 
 This program is free software. You can redistribute it and/or modify it
 under the same terms as Perl itself.
