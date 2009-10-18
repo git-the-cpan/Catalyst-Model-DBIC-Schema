@@ -398,6 +398,12 @@ METHODS
     returns the model instance, see "ACCEPT_CONTEXT" in
     Catalyst::Manual::Intro for more information.
 
+ENVIRONMENT
+    CMDS_NO_SOURCES
+        Set this variable if you will be using schemas with no sources
+        (tables) to disable the warning. The warning is there because this
+        is usually a mistake.
+
 SEE ALSO
     General Catalyst Stuff:
 
@@ -422,6 +428,8 @@ CONTRIBUTORS
     caelum: Rafael Kitover "rkitover at cpan.org"
 
     Dan Dascalescu "dandv at cpan.org"
+
+    Aran Deltac "bluefeet@cpan.org"
 
 COPYRIGHT
     This program is free software. You can redistribute it and/or modify it
