@@ -3,13 +3,9 @@ use inc::Module::Install 0.91;
 name 'Catalyst-Model-DBIC-Schema';
 all_from 'lib/Catalyst/Model/DBIC/Schema.pm';
 
-requires 'DBIx::Class'           => '0.08111';
+requires 'DBIx::Class'           => '0.08114';
 requires 'Catalyst::Runtime'     => '5.80005';
 requires 'CatalystX::Component::Traits' => '0.10';
-
-# XXX remove this once the dep in DBIC is updated, needed for schema
-# introspection to work.
-requires 'Class::Accessor::Grouped' => '0.09000';
 
 requires 'Moose';
 requires 'MooseX::Types';
@@ -18,7 +14,7 @@ requires 'Carp::Clan';
 requires 'List::MoreUtils';
 requires 'Tie::IxHash';
 
-test_requires 'Test::More';
+test_requires 'Test::More' => '0.92';
 test_requires 'Test::Exception';
 
 feature 'Catalyst::Helper support',
@@ -38,6 +34,8 @@ feature 'Replication support',
 if(-e 'MANIFEST.SKIP') {
     system("pod2text lib/Catalyst/Model/DBIC/Schema.pm > README");
 }
+
+realclean_files 'README';
 
 auto_provides;
 auto_install;

@@ -2,101 +2,67 @@ NAME
     Catalyst::Model::DBIC::Schema - DBIx::Class::Schema Model Class
 
 SYNOPSIS
-    Manual creation of a DBIx::Class::Schema and a
-    Catalyst::Model::DBIC::Schema:
+    First, prepare your database schema using DBIx::Class, see
+    Catalyst::Helper::Model::DBIC::Schema for how to generate a
+    DBIx::Class::Schema from your database using the Helper script, and
+    DBIx::Class::Schema::Loader::Base.
 
-    1.  Create the DBIx:Class schema in MyApp/Schema/FilmDB.pm:
+    A typical usage of the helper script would be:
 
-          package MyApp::Schema::FilmDB;
-          use base qw/DBIx::Class::Schema/;
+        script/myapp_create.pl model FilmDB DBIC::Schema MyApp::Schema::FilmDB \
+            create=static dbi:mysql:filmdb dbusername dbpass \
+            quote_char='`' name_sep='.'
 
-          __PACKAGE__->load_classes(qw/Actor Role/);
+    If you are unfamiliar with DBIx::Class, see DBIx::Class::Manual::Intro
+    first.
 
-    2.  Create some classes for the tables in the database, for example an
-        Actor in MyApp/Schema/FilmDB/Actor.pm:
+    These examples assume that you already have a schema called
+    "MyApp::Schema::FilmDB", which defines some Result classes for tables in
+    "MyApp::Schema::FilmDB::Result::Actor" and
+    "MyApp::Schema::FilmDB::Result::Film". Either created by the helper
+    script (as shown above) or manually.
 
-          package MyApp::Schema::FilmDB::Actor;
-          use base qw/DBIx::Class/
+    The helper also creates a Model in "lib/MyApp/Model/FilmDB.pm", if you
+    already have a schema you can create just the Model using:
 
-          __PACKAGE__->load_components(qw/Core/);
-          __PACKAGE__->table('actor');
+        script/myapp_create.pl model FilmDB DBIC::Schema MyApp::Schema::FilmDB
+            dbi:mysql:filmdb dbusername dbpass
 
-          ...
-
-        and a Role in MyApp/Schema/FilmDB/Role.pm:
-
-          package MyApp::Schema::FilmDB::Role;
-          use base qw/DBIx::Class/
-
-          __PACKAGE__->load_components(qw/Core/);
-          __PACKAGE__->table('role');
-
-          ...    
-
-        Notice that the schema is in MyApp::Schema, not in MyApp::Model.
-        This way it's usable as a standalone module and you can test/run it
-        without Catalyst.
-
-    3.  To expose it to Catalyst as a model, you should create a DBIC Model
-        in MyApp/Model/FilmDB.pm:
-
-          package MyApp::Model::FilmDB;
-          use base qw/Catalyst::Model::DBIC::Schema/;
-
-          __PACKAGE__->config(
-              schema_class => 'MyApp::Schema::FilmDB',
-              connect_info => {
-                                dsn => "DBI:...",
-                                user => "username",
-                                password => "password",
-                              }
-          );
-
-        See below for a full list of the possible config parameters.
+    The connect_info is optional and will be hardcoded into the Model if
+    provided. It's better to configure it in your Catalyst config file,
+    which will also override any hardcoded config, see "connect_info" for
+    examples.
 
     Now you have a working Model which accesses your separate DBIC Schema.
     This can be used/accessed in the normal Catalyst manner, via
-    $c->model():
+    "$c->model()":
 
-      my $actor = $c->model('FilmDB::Actor')->find(1);
+      my $db_model = $c->model('FilmDB');         # a Catalyst::Model
+      my $dbic     = $c->model('FilmDB')->schema; # the actual DBIC object
 
-    You can also use it to set up DBIC authentication with
-    Catalyst::Authentication::Store::DBIx::Class in MyApp.pm:
+    The Model proxies to the "Schema" instance so you can do:
 
-      package MyApp;
+      my $rs = $db_model->resultset('Actor');     # ... or ...
+      my $rs = $dbic    ->resultset('Actor');     # same!
 
-      use Catalyst qw/... Authentication .../;
+    There is also a shortcut, which returns a DBIx::Class::ResultSet
+    directly, instead of a Catalyst::Model:
 
-      ...
+      my $rs = $c->model('FilmDB::Actor');
 
-      __PACKAGE__->config->{authentication} = 
-                    {  
-                        default_realm => 'members',
-                        realms => {
-                            members => {
-                                credential => {
-                                    class => 'Password',
-                                    password_field => 'password',
-                                    password_type => 'hashed'
-                                    password_hash_type => 'SHA-256'
-                                },
-                                store => {
-                                    class => 'DBIx::Class',
-                                    user_model => 'DB::User',
-                                    role_relation => 'roles',
-                                    role_field => 'rolename',                   
-                                }
-                            }
-                        }
-                    };
+    See DBIx::Class::ResultSet to find out more about which methods can be
+    called on ResultSets.
 
-    "$c->model('Schema::Source')" returns a DBIx::Class::ResultSet for the
-    source name parameter passed. To find out more about which methods can
-    be called on a ResultSet, or how to add your own methods to it, please
-    see the ResultSet documentation in the DBIx::Class distribution.
+    You can also define your own ResultSet methods to encapsulate the
+    database/business logic of your applications. These go into, for
+    example, "lib/MyApp/Schema/FilmDB/ResultSet/Actor.pm". The class must
+    inherit from DBIx::Class::ResultSet and is automatically loaded.
 
-    Some examples are given below:
+    Then call your methods like any other DBIx::Class::ResultSet method:
 
+        $c->model('FilmDB::Actor')->SAG_members
+
+  Some examples:
       # to access schema methods directly:
       $c->model('FilmDB')->schema->source(...);
 
@@ -125,6 +91,8 @@ SYNOPSIS
       $newconn->storage_type('::LDAP');
       $newconn->connection(...);
 
+    To set up authentication, see "Setting up DBIC authentication" below.
+
 DESCRIPTION
     This is a Catalyst Model for DBIx::Class::Schema-based Models. See the
     documentation for Catalyst::Helper::Model::DBIC::Schema for information
@@ -134,7 +102,8 @@ DESCRIPTION
     interface to your DBIC Schema. It should be clearly noted that the model
     object returned by "$c->model('FilmDB')" is NOT itself a DBIC schema or
     resultset object, but merely a wrapper proving methods to access the
-    underlying schema.
+    underlying schema (but also proxies other methods to the underlying
+    schema.)
 
     In addition to this model class, a shortcut class is generated for each
     source in the schema, allowing easy and direct access to a resultset of
@@ -164,8 +133,14 @@ DESCRIPTION
 
     In order to add methods to a DBIC resultset, you cannot simply add them
     to the source (row, table) definition class; you must define a separate
-    custom resultset class. See "Predefined searches" in
-    DBIx::Class::Manual::Cookbook for more info.
+    custom resultset class. This is just a matter of making a
+    "lib/MyApp/Schema/ResultSet/Actor.pm" class that inherits from
+    DBIx::Class::ResultSet, if you are using "load_namespaces" in
+    DBIx::Class::Schema, the default for helper script generated schemas.
+
+    See "Predefined searches" in DBIx::Class::Manual::Cookbook for
+    information on definining your own DBIx::Class::ResultSet classes for
+    use with "load_classes" in DBIx::Class::Schema, the old default.
 
 CONFIG PARAMETERS
     Any options in your config not listed here are passed to your schema.
@@ -401,8 +376,37 @@ METHODS
 ENVIRONMENT
     CMDS_NO_SOURCES
         Set this variable if you will be using schemas with no sources
-        (tables) to disable the warning. The warning is there because this
-        is usually a mistake.
+        (Result classes) to disable the warning. The warning is there
+        because having no Result classes is usually a mistake.
+
+Setting up DBIC authentication
+    You can set this up with Catalyst::Authentication::Store::DBIx::Class in
+    MyApp.pm:
+
+      package MyApp;
+
+      use Catalyst qw/... Authentication .../;
+
+      ...
+
+      __PACKAGE__->config('Plugin::Authentication' =>
+                    {
+                        default_realm => 'members',
+                        members => {
+                            credential => {
+                                class => 'Password',
+                                password_field => 'password',
+                                password_type => 'hashed'
+                                password_hash_type => 'SHA-256'
+                            },
+                            store => {
+                                class => 'DBIx::Class',
+                                user_model => 'DB::User',
+                                role_relation => 'roles',
+                                role_field => 'rolename',
+                            }
+                        }
+                    });
 
 SEE ALSO
     General Catalyst Stuff:
@@ -419,7 +423,8 @@ SEE ALSO
     Traits:
 
     Catalyst::TraitFor::Model::DBIC::Schema::Caching,
-    Catalyst::TraitFor::Model::DBIC::Schema::Replicated
+    Catalyst::TraitFor::Model::DBIC::Schema::Replicated,
+    Catalyst::TraitFor::Model::DBIC::Schema::QueryLog
 
 AUTHOR
     Brandon L Black "blblack at gmail.com"
@@ -427,9 +432,15 @@ AUTHOR
 CONTRIBUTORS
     caelum: Rafael Kitover "rkitover at cpan.org"
 
-    Dan Dascalescu "dandv at cpan.org"
+    dandv: Dan Dascalescu "dandv at cpan.org"
 
-    Aran Deltac "bluefeet@cpan.org"
+    bluefeet: Aran Deltac "bluefeet@cpan.org"
+
+    t0m: Tomas Doran "bobtfish@bobtfish.net"
+
+    osfameron: "osfameron@cpan.org"
+
+    ozum: Ozum Eldogan "ozum@ozum.net"
 
 COPYRIGHT
     Copyright (c) 2006 - 2009 the Catalyst::Model::DBIC::Schema "AUTHOR" and

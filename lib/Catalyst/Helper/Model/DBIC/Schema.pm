@@ -4,7 +4,8 @@ use namespace::autoclean;
 use Moose;
 no warnings 'uninitialized';
 
-our $VERSION = '0.30';
+our $VERSION = '0.32';
+$VERSION = eval $VERSION;
 
 use Carp;
 use Tie::IxHash ();
@@ -105,6 +106,14 @@ Same, but with extra Schema::Loader args (separate multiple values by commas):
     MyApp::SchemaClass create=static db_schema=foodb components=Foo,Bar \
     exclude='^(wibble|wobble)$' moniker_map='{ foo => "FOO" }' \
     dbi:Pg:dbname=foodb myuname mypass
+
+Coderefs are also supported:
+
+  script/myapp_create.pl model CatalystModelName DBIC::Schema \
+    MyApp::SchemaClass create=static \
+    inflect_singular='sub { $_[0] =~ /\A(.+?)(_id)?\z/; $1 }' \
+    moniker_map='sub { join(q{}, map ucfirst, split(/[\W_]+/, lc $_[0])); }' \
+    dbi:mysql:foodb myuname mypass
 
 See L<DBIx::Class::Schema::Loader::Base> for a list of options
 
@@ -454,7 +463,7 @@ sub _parse_connect_info {
 sub _is_struct {
     my ($self, $val) = @_;
 
-    return $val =~ /^\s*[[{]/;
+    return $val =~ /^\s*(?:sub|[[{])/;
 }
 
 sub _quote {
@@ -567,11 +576,12 @@ L<DBIx::Class::Schema::Loader>, L<Catalyst::Model::DBIC::Schema>
 
 =head1 AUTHOR
 
-Brandon L Black, C<blblack@gmail.com>
+See L<Catalyst::Model::DBIC::Schema/AUTHOR> and
+L<Catalyst::Model::DBIC::Schema/CONTRIBUTORS>.
 
-Contributors:
+=head1 COPYRIGHT
 
-Rafael Kitover, C<rkitover at cpan.org>
+See L<Catalyst::Model::DBIC::Schema/COPYRIGHT>.
 
 =head1 LICENSE
 
