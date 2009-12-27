@@ -1,12 +1,11 @@
 package Catalyst::Model::DBIC::Schema;
 
-use 5.008_001;
 use Moose;
 use mro 'c3';
 extends 'Catalyst::Model';
 with 'CatalystX::Component::Traits';
 
-our $VERSION = '0.33';
+our $VERSION = '0.34';
 $VERSION = eval $VERSION;
 
 use namespace::autoclean;
@@ -15,7 +14,7 @@ use Data::Dumper;
 use DBIx::Class ();
 
 use Catalyst::Model::DBIC::Schema::Types
-    qw/ConnectInfo LoadedClass SchemaClass/;
+    qw/ConnectInfo LoadedClass SchemaClass Schema/;
 
 use MooseX::Types::Moose qw/ArrayRef Str ClassName Undef/;
 
@@ -60,11 +59,6 @@ be used/accessed in the normal Catalyst manner, via C<< $c->model() >>:
 
   my $db_model = $c->model('FilmDB');         # a Catalyst::Model
   my $dbic     = $c->model('FilmDB')->schema; # the actual DBIC object
-
-The Model proxies to the C<Schema> instance so you can do:
-
-  my $rs = $db_model->resultset('Actor');     # ... or ...
-  my $rs = $dbic    ->resultset('Actor');     # same!
 
 There is also a shortcut, which returns a L<DBIx::Class::ResultSet> directly,
 instead of a L<Catalyst::Model>:
@@ -125,7 +119,7 @@ When your Catalyst app starts up, a thin Model layer is created as an interface
 to your DBIC Schema. It should be clearly noted that the model object returned
 by C<< $c->model('FilmDB') >> is NOT itself a DBIC schema or resultset object,
 but merely a wrapper proving L<methods|/METHODS> to access the underlying
-schema (but also proxies other methods to the underlying schema.) 
+schema.
 
 In addition to this model class, a shortcut class is generated for each 
 source in the schema, allowing easy and direct access to a resultset of the 
@@ -166,8 +160,6 @@ for information on definining your own L<DBIx::Class::ResultSet> classes for
 use with L<DBIx::Class::Schema/load_classes>, the old default.
 
 =head1 CONFIG PARAMETERS
-
-Any options in your config not listed here are passed to your schema.
 
 =head2 schema_class
 
@@ -279,9 +271,10 @@ supported:
 
 Array of Traits to apply to the instance. Traits are L<Moose::Role>s.
 
-They are relative to the C<< MyApp::TraitFor::Model::DBIC::Schema:: >>, then the C<<
-Catalyst::TraitFor::Model::DBIC::Schema:: >> namespaces, unless prefixed with C<+>
-in which case they are taken to be a fully qualified name. E.g.:
+They are relative to the C<< MyApp::TraitFor::Model::DBIC::Schema:: >>, then
+the C<< Catalyst::TraitFor::Model::DBIC::Schema:: >> namespaces, unless
+prefixed with C<+> in which case they are taken to be a fully qualified name.
+E.g.:
 
     traits Caching
     traits +MyApp::TraitFor::Model::Foo
@@ -305,6 +298,8 @@ Traits that come with the distribution:
 =item L<Catalyst::TraitFor::Model::DBIC::Schema::Caching>
 
 =item L<Catalyst::TraitFor::Model::DBIC::Schema::Replicated>
+
+=item L<Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy>
 
 =back
 
@@ -355,15 +350,6 @@ Traits you used resolved to full class names.
 
 =head1 METHODS
 
-Methods not listed here are delegated to the connected schema used by the model
-instance, so the following are equivalent:
-
-    $c->model('DB')->schema->my_accessor('foo');
-    # or
-    $c->model('DB')->my_accessor('foo');
-
-Methods on the model take precedence over schema methods.
-
 =head2 new
 
 Instantiates the Model based on the above-documented ->config parameters.
@@ -404,6 +390,14 @@ Shortcut for ->schema->class
 
 Shortcut for ->schema->resultset
 
+=head2 txn_do
+
+Shortcut for ->schema->txn_do
+
+=head2 txn_scope_guard
+
+Shortcut for ->schema->txn_scope_guard
+
 =head2 storage
 
 Provides an accessor for the connected schema's storage object.
@@ -436,6 +430,8 @@ has _default_cursor_class => (
     coerce => 1
 );
 
+has schema => (is => 'rw', isa => Schema);
+
 sub BUILD {
     my ($self, $args) = @_;
     my $class = $self->_original_class_name;
@@ -449,7 +445,7 @@ sub BUILD {
             die "Either ->config->{connect_info} must be defined for $class"
                   . " or $schema_class must have connect info defined on it."
 		  . " Here's what we got:\n"
-		  . Dumper($self);
+		  . Dumper($args);
         }
     }
 
@@ -459,40 +455,42 @@ sub BUILD {
         . " ".$self->connect_info->{cursor_class}.": $@";
     }
 
-    $self->setup;
+    $self->setup($args);
 
-    $self->composed_schema($schema_class->compose_namespace($class));
+    my $is_installed = defined $self->composed_schema;
 
-    my $was_mutable = $self->meta->is_mutable;
+    $self->composed_schema($schema_class->compose_namespace($class))
+        unless $is_installed;
 
-    $self->meta->make_mutable;
-    $self->meta->add_attribute('schema',
-        is => 'rw',
-        isa => 'DBIx::Class::Schema',
-        handles => $self->_delegates
-    );
-    $self->meta->make_immutable unless $was_mutable;
-
-    $self->schema($self->composed_schema->clone);
-
-    $self->_pass_options_to_schema($args);
+    $self->schema($self->composed_schema->clone)
+        unless $self->schema;
 
     $self->schema->storage_type($self->storage_type)
         if $self->storage_type;
 
     $self->schema->connection($self->connect_info);
 
-    $self->_install_rs_models;
+    $self->_install_rs_models unless $is_installed;
 }
 
 sub clone { shift->composed_schema->clone(@_); }
 
 sub connect { shift->composed_schema->connect(@_); }
 
+# some proxy methods, see also SchemaProxy
+
+sub resultset { shift->schema->resultset(@_); }
+
+sub txn_do { shift->schema->txn_do(@_); }
+
+sub txn_scope_guard { shift->schema->txn_scope_guard(@_); }
+
 =head2 setup
 
 Called at C<BUILD> time before configuration, but after L</connect_info> is
 set. To do something after configuuration use C<< after BUILD => >>.
+
+Receives a hashref of args passed to C<BUILD>.
 
 =cut
 
@@ -566,55 +564,6 @@ sub _build_model_name {
     return $model_name;
 }
 
-sub _delegates {
-    my $self = shift;
-
-    my $schema_meta = Class::MOP::Class->initialize($self->schema_class);
-    my @schema_methods = $schema_meta->get_all_method_names;
-
-# combine with any already added by other schemas
-    my @handles = eval {
-        @{ $self->meta->find_attribute_by_name('schema')->handles }
-    };
-
-# now kill the attribute, otherwise add_attribute in BUILD will not do the right
-# thing (it clears the handles for some reason.) May be a Moose bug.
-    eval { $self->meta->remove_attribute('schema') };
-
-    my %schema_methods;
-    @schema_methods{ @schema_methods, @handles } = ();
-    @schema_methods = keys %schema_methods;
-
-    my @my_methods = $self->meta->get_all_method_names;
-    my %my_methods;
-    @my_methods{@my_methods} = ();
-
-    my @delegates;
-    for my $method (@schema_methods) {
-        push @delegates, $method unless exists $my_methods{$method};
-    }
-
-    return \@delegates;
-}
-
-sub _pass_options_to_schema {
-    my ($self, $args) = @_;
-
-    my @attributes = map {
-        $_->init_arg || ()
-    } $self->meta->get_all_attributes;
-
-    my %attributes;
-    @attributes{@attributes} = ();
-
-    for my $opt (keys %$args) {
-        if (not exists $attributes{$opt}) {
-            next unless $self->schema->can($opt);
-            $self->schema->$opt($self->{$opt});
-        }
-    }
-}
-
 __PACKAGE__->meta->make_immutable;
 
 =head1 ENVIRONMENT
@@ -659,6 +608,14 @@ L<Catalyst::Authentication::Store::DBIx::Class> in MyApp.pm:
                     }
                 });
 
+=head1 METHOD PROXYING
+
+The automatic proxying to the underlying L<DBIx::Class::Schema> has been
+removed as of version C<0.34>, to enable this feature add C<SchemaProxy> to
+L</traits>.
+
+See L<Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy>.
+
 =head1 SEE ALSO
 
 General Catalyst Stuff:
@@ -676,6 +633,7 @@ Traits:
 
 L<Catalyst::TraitFor::Model::DBIC::Schema::Caching>,
 L<Catalyst::TraitFor::Model::DBIC::Schema::Replicated>,
+L<Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy>,
 L<Catalyst::TraitFor::Model::DBIC::Schema::QueryLog>
 
 =head1 AUTHOR

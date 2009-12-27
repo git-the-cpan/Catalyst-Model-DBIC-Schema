@@ -40,11 +40,6 @@ SYNOPSIS
       my $db_model = $c->model('FilmDB');         # a Catalyst::Model
       my $dbic     = $c->model('FilmDB')->schema; # the actual DBIC object
 
-    The Model proxies to the "Schema" instance so you can do:
-
-      my $rs = $db_model->resultset('Actor');     # ... or ...
-      my $rs = $dbic    ->resultset('Actor');     # same!
-
     There is also a shortcut, which returns a DBIx::Class::ResultSet
     directly, instead of a Catalyst::Model:
 
@@ -102,8 +97,7 @@ DESCRIPTION
     interface to your DBIC Schema. It should be clearly noted that the model
     object returned by "$c->model('FilmDB')" is NOT itself a DBIC schema or
     resultset object, but merely a wrapper proving methods to access the
-    underlying schema (but also proxies other methods to the underlying
-    schema.)
+    underlying schema.
 
     In addition to this model class, a shortcut class is generated for each
     source in the schema, allowing easy and direct access to a resultset of
@@ -143,8 +137,6 @@ DESCRIPTION
     use with "load_classes" in DBIx::Class::Schema, the old default.
 
 CONFIG PARAMETERS
-    Any options in your config not listed here are passed to your schema.
-
   schema_class
     This is the classname of your DBIx::Class::Schema Schema. It needs to be
     findable in @INC, but it does not need to be inside the
@@ -278,6 +270,7 @@ CONFIG PARAMETERS
 
     Catalyst::TraitFor::Model::DBIC::Schema::Caching
     Catalyst::TraitFor::Model::DBIC::Schema::Replicated
+    Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy
 
   storage_type
     Allows the use of a different "storage_type" than what is set in your
@@ -318,15 +311,6 @@ ATTRIBUTES FROM MooseX::Traits::Pluggable
     Traits you used resolved to full class names.
 
 METHODS
-    Methods not listed here are delegated to the connected schema used by
-    the model instance, so the following are equivalent:
-
-        $c->model('DB')->schema->my_accessor('foo');
-        # or
-        $c->model('DB')->my_accessor('foo');
-
-    Methods on the model take precedence over schema methods.
-
   new
     Instantiates the Model based on the above-documented ->config
     parameters. The only required parameter is "schema_class".
@@ -360,6 +344,12 @@ METHODS
   resultset
     Shortcut for ->schema->resultset
 
+  txn_do
+    Shortcut for ->schema->txn_do
+
+  txn_scope_guard
+    Shortcut for ->schema->txn_scope_guard
+
   storage
     Provides an accessor for the connected schema's storage object. Used
     often for debugging and controlling transactions.
@@ -367,6 +357,8 @@ METHODS
   setup
     Called at "BUILD" time before configuration, but after "connect_info" is
     set. To do something after configuuration use "after BUILD =>".
+
+    Receives a hashref of args passed to "BUILD".
 
   ACCEPT_CONTEXT
     Point of extension for doing things at "$c->model" time with context,
@@ -408,6 +400,13 @@ Setting up DBIC authentication
                         }
                     });
 
+METHOD PROXYING
+    The automatic proxying to the underlying DBIx::Class::Schema has been
+    removed as of version 0.34, to enable this feature add "SchemaProxy" to
+    "traits".
+
+    See Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy.
+
 SEE ALSO
     General Catalyst Stuff:
 
@@ -424,6 +423,7 @@ SEE ALSO
 
     Catalyst::TraitFor::Model::DBIC::Schema::Caching,
     Catalyst::TraitFor::Model::DBIC::Schema::Replicated,
+    Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy,
     Catalyst::TraitFor::Model::DBIC::Schema::QueryLog
 
 AUTHOR

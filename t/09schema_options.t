@@ -20,9 +20,12 @@ lives_ok { $m->a_schema_option('pass the crack pipe') } 'delegate called';
 is $m->schema->a_schema_option, 'pass the crack pipe', 'delegation works';
 
 sub instance {
-    Catalyst::Model::DBIC::Schema->new({
+    Catalyst::Model::DBIC::Schema->COMPONENT('MyApp', {
+        traits => 'SchemaProxy',
         schema_class => 'ASchemaClass',
         connect_info => ['dbi:SQLite:foo.db', '', ''],
         @_,
     })
 }
+
+{ package MyApp; use Catalyst; }
