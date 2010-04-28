@@ -29,6 +29,7 @@ t/08helper.t
 t/09schema_options.t
 t/lib/AnotherSchemaClass.pm
 t/lib/AnotherSchemaClass/Result/Users.pm
+t/lib/AnotherSchemaClass/ResultSet/Users.pm
 t/lib/ASchemaClass.pm
 t/lib/ASchemaClass/Users.pm
 t/lib/TestAppC3Fail.pm

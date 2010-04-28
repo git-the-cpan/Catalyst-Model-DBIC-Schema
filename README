@@ -310,6 +310,12 @@ ATTRIBUTES FROM MooseX::Traits::Pluggable
   _resolved_traits
     Traits you used resolved to full class names.
 
+CONFIGURING YOUR SCHEMA AND RESULTSETS
+    See the documentation for
+    Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy for instructions on
+    how to pass config values from your Catalyst config to your
+    DBIx::Class::Schema and/or DBIx::Class::ResultSet classes.
+
 METHODS
   new
     Instantiates the Model based on the above-documented ->config
@@ -351,8 +357,9 @@ METHODS
     Shortcut for ->schema->txn_scope_guard
 
   storage
-    Provides an accessor for the connected schema's storage object. Used
-    often for debugging and controlling transactions.
+    Provides an accessor for the connected schema's storage object.
+
+    See DBIx::Class::Storage and DBIx::Class::Storage::DBI.
 
   setup
     Called at "BUILD" time before configuration, but after "connect_info" is
@@ -445,7 +452,7 @@ CONTRIBUTORS
     Pavel I. Shaydo "zwon@trinitum.org"
 
 COPYRIGHT
-    Copyright (c) 2006 - 2009 the Catalyst::Model::DBIC::Schema "AUTHOR" and
+    Copyright (c) 2006 - 2010 the Catalyst::Model::DBIC::Schema "AUTHOR" and
     "CONTRIBUTORS" as listed above.
 
 LICENSE
