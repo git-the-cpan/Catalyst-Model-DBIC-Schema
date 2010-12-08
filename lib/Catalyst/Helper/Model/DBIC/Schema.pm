@@ -4,7 +4,7 @@ use namespace::autoclean;
 use Moose;
 no warnings 'uninitialized';
 
-our $VERSION = '0.44';
+our $VERSION = '0.45';
 $VERSION = eval $VERSION;
 
 use Carp;
@@ -416,6 +416,8 @@ sub _build_is_moose_schema {
 
     try {
         finddepth(sub {
+            return if $File::Find::name !~ /\.pm\z/;
+
             open my $fh, '<', $File::Find::name
                 or die "Could not open $File::Find::name: $!";
 
