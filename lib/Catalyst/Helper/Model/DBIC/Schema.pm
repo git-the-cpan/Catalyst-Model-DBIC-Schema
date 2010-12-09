@@ -4,7 +4,7 @@ use namespace::autoclean;
 use Moose;
 no warnings 'uninitialized';
 
-our $VERSION = '0.47';
+our $VERSION = '0.48';
 $VERSION = eval $VERSION;
 
 use Carp;
@@ -439,7 +439,7 @@ sub _build_result_namespace {
         File::Spec->catfile($self->helper->{base}, 'lib', @schema_parts) . '.pm';
 
     if (not -f $schema_pm) {
-        try { Class::MOP::load_class('DBIx::Class::Schema::Loader') };
+        eval { Class::MOP::load_class('DBIx::Class::Schema::Loader') };
 
         return 'Result' if $@;
 
@@ -452,16 +452,11 @@ sub _build_result_namespace {
 
     my ($result_namespace) = $code =~ /result_namespace => '([^']+)'/;
 
-    if (not $result_namespace) {
-        if ($code =~ /->load_classes/) {
-            $result_namespace = '';
-        }
-        else {
-            $result_namespace = 'Result';
-        }
-    }
+    return $result_namespace if $result_namespace;
 
-    return $result_namespace;
+    return '' if $code =~ /->load_classes/;
+
+    return 'Result';
 }
 
 sub _data_struct_to_string {
@@ -588,8 +583,12 @@ sub _gen_static_schema {
 
     my $schema_dir = File::Spec->catfile($helper->{base}, 'lib');
 
-    try { Class::MOP::load_class('DBIx::Class::Schema::Loader') };
-    die "Cannot load DBIx::Class::Schema::Loader: $@" if $@;
+    try {
+        Class::MOP::load_class('DBIx::Class::Schema::Loader')
+    }
+    catch {
+        die "Cannot load DBIx::Class::Schema::Loader: $_";
+    };
 
     DBIx::Class::Schema::Loader->import(
         "dump_to_dir:$schema_dir", 'make_schema_at'
