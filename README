@@ -11,7 +11,7 @@ SYNOPSIS
 
         script/myapp_create.pl model FilmDB DBIC::Schema MyApp::Schema::FilmDB \
             create=static dbi:mysql:filmdb dbusername dbpass \
-            quote_char='`' name_sep='.'
+            quote_names=1
 
     If you are unfamiliar with DBIx::Class, see DBIx::Class::Manual::Intro
     first.
@@ -143,14 +143,14 @@ CONFIG PARAMETERS
     "Catalyst::Model::" namespace. This parameter is required.
 
   connect_info
-    This is an arrayref of connection parameters, which are specific to your
-    "storage_type" (see your storage type documentation for more details).
-    If you only need one parameter (e.g. the DSN), you can just pass a
-    string instead of an arrayref.
+    This is a hashref or arrayref of connection parameters, which are
+    specific to your "storage_type" (see your storage type documentation for
+    more details). If you only need one parameter (e.g. the DSN), you can
+    just pass a string.
 
     This is not required if "schema_class" already has connection
     information defined inside itself (which isn't highly recommended, but
-    can be done)
+    can be done.)
 
     For DBIx::Class::Storage::DBI, which is the only supported
     "storage_type" in DBIx::Class at the time of this writing, the
@@ -196,7 +196,7 @@ CONFIG PARAMETERS
                 user   postgres
                 password ""
                 auto_savepoint 1
-                quote_char """
+                quote_names 1
                 on_connect_do   some SQL statement
                 on_connect_do   another SQL statement
             </connect_info>
@@ -222,7 +222,7 @@ CONFIG PARAMETERS
               LongReadLen: 1000000
               LongTruncOk: 1
               on_connect_call: 'datetime_setup'
-              quote_char: '"'
+              quote_names: 1
 
     The old arrayref style with hashrefs for DBI then DBIx::Class options is
     also supported:
