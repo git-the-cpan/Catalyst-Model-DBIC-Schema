@@ -23,7 +23,7 @@ feature 'Catalyst::Helper support',
     -default                      => 0,
     'Catalyst::Devel'             => '1.0',
     'DBIx::Class::Schema::Loader' => '0.04005',
-    'MooseX::NonMoose'            => 0.15,
+    'MooseX::NonMoose'            => 0.16,
 ;
 
 feature 'Caching support',
@@ -43,7 +43,8 @@ realclean_files 'README';
 
 auto_provides;
 auto_install;
+
 resources repository =>
-    'http://dev.catalyst.perl.org/repos/Catalyst/Catalyst-Model-DBIC-Schema/';
+    'git://git.shadowcat.co.uk/catagits/Catalyst-Model-DBIC-Schema.git';
 
 WriteAll;

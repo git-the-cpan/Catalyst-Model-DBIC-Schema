@@ -36,4 +36,3 @@ t/lib/TestAppC3Fail.pm
 t/lib/TestAppC3Fail/Model/DB.pm
 t/lib/TestAppC3Fail/Schema/DB.pm
 t/lib/TestAppC3Fail/Schema/DB/Users.pm
-TODO
