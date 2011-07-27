@@ -17,13 +17,11 @@ my %FeatureMap = (
 );
 
 # various lexical flags
-my ( @Missing, @Existing,  %DisabledTests, $UnderCPAN, $InstallDepsTarget, $HasCPANPLUS );
+my ( @Missing, @Existing,  %DisabledTests, $UnderCPAN,     $HasCPANPLUS );
 my (
-    $Config, $CheckOnly, $SkipInstall, $AcceptDefault, $TestOnly, $AllDeps,
-    $UpgradeDeps
+    $Config, $CheckOnly, $SkipInstall, $AcceptDefault, $TestOnly, $AllDeps
 );
-my ( $PostambleActions, $PostambleActionsNoTest, $PostambleActionsUpgradeDeps,
-    $PostambleActionsUpgradeDepsNoTest, $PostambleUsed, $NoTest);
+my ( $PostambleActions, $PostambleUsed );
 
 # See if it's a testing or non-interactive session
 _accept_default( $ENV{AUTOMATED_TESTING} or ! -t STDIN ); 
@@ -31,10 +29,6 @@ _init();
 
 sub _accept_default {
     $AcceptDefault = shift;
-}
-
-sub _installdeps_target {
-    $InstallDepsTarget = shift;
 }
 
 sub missing_modules {
@@ -69,11 +63,6 @@ sub _init {
             __PACKAGE__->install( $Config, @Missing = split( /,/, $1 ) );
             exit 0;
         }
-	elsif ( $arg =~ /^--upgradedeps=(.*)$/ ) {
-	    $UpgradeDeps = 1;
-	    __PACKAGE__->install( $Config, @Missing = split( /,/, $1 ) );
-	    exit 0;
-	}
         elsif ( $arg =~ /^--default(?:deps)?$/ ) {
             $AcceptDefault = 1;
         }
@@ -136,7 +125,7 @@ sub import {
     # check entirely since we don't want to have to load (and configure)
     # an old CPAN just for a cosmetic message
 
-    $UnderCPAN = _check_lock(1) unless $SkipInstall || $InstallDepsTarget;
+    $UnderCPAN = _check_lock(1) unless $SkipInstall;
 
     while ( my ( $feature, $modules ) = splice( @args, 0, 2 ) ) {
         my ( @required, @tests, @skiptests );
@@ -218,7 +207,6 @@ sub import {
                 $CheckOnly
                 or ($mandatory and $UnderCPAN)
                 or $AllDeps
-                or $InstallDepsTarget
                 or _prompt(
                     qq{==> Auto-install the }
                       . ( @required / 2 )
@@ -249,17 +237,10 @@ sub import {
         }
     }
 
-    if ( @Missing and not( $CheckOnly or $UnderCPAN) ) {
+    if ( @Missing and not( $CheckOnly or $UnderCPAN ) ) {
         require Config;
-        my $make = $Config::Config{make};
-        if ($InstallDepsTarget) {
-            print
-"*** To install dependencies type '$make installdeps' or '$make installdeps_notest'.\n";
-        }
-        else {
-            print
-"*** Dependencies will be installed the next time you type '$make'.\n";
-        }
+        print
+"*** Dependencies will be installed the next time you type '$Config::Config{make}'.\n";
 
         # make an educated guess of whether we'll need root permission.
         print "    (You may need to do that as the 'root' user.)\n"
@@ -289,10 +270,6 @@ END_MESSAGE
 # if we are, then we simply let it taking care of our dependencies
 sub _check_lock {
     return unless @Missing or @_;
-
-    if ($ENV{PERL5_CPANM_IS_RUNNING}) {
-        return _running_under('cpanminus');
-    }
 
     my $cpan_env = $ENV{PERL5_CPAN_IS_RUNNING};
 
@@ -355,11 +332,6 @@ sub install {
         }
     }
 
-    if ($UpgradeDeps) {
-	push @modules, @installed;
-	@installed = ();
-    }
-
     return @installed unless @modules;  # nothing to do
     return @installed if _check_lock(); # defer to the CPAN shell
 
@@ -381,10 +353,7 @@ sub install {
         @modules = @newmod;
     }
 
-    if ( _has_cpanminus() and not ($ENV{PERL_AUTOINSTALL_PREFER_CPANPLUS}
-            || $ENV{PERL_AUTOINSTALL_PREFER_CPAN}) ) {
-        _install_cpanminus( \@modules, \@config );
-    } elsif ( _has_cpanplus() and not $ENV{PERL_AUTOINSTALL_PREFER_CPAN} ) {
+    if ( _has_cpanplus() and not $ENV{PERL_AUTOINSTALL_PREFER_CPAN} ) {
         _install_cpanplus( \@modules, \@config );
     } else {
         _install_cpan( \@modules, \@config );
@@ -494,11 +463,6 @@ sub _cpanplus_config {
 			} else {
 				die "*** Cannot convert option $key = '$value' to CPANPLUS version.\n";
 			}
-			push @config, 'prereqs', $value;
-		} elsif ( $key eq 'force' ) {
-		    push @config, $key, $value;
-		} elsif ( $key eq 'notest' ) {
-		    push @config, 'skiptest', $value;
 		} else {
 			die "*** Cannot convert option $key to CPANPLUS version.\n";
 		}
@@ -533,12 +497,8 @@ sub _install_cpan {
     # set additional options
     while ( my ( $opt, $arg ) = splice( @config, 0, 2 ) ) {
         ( $args{$opt} = $arg, next )
-          if $opt =~ /^(?:force|notest)$/;    # pseudo-option
+          if $opt =~ /^force$/;    # pseudo-option
         $CPAN::Config->{$opt} = $arg;
-    }
-
-    if ($args{notest} && (not CPAN::Shell->can('notest'))) {
-	die "Your version of CPAN is too old to support the 'notest' pragma";
     }
 
     local $CPAN::Config->{prerequisites_policy} = 'follow';
@@ -559,16 +519,8 @@ sub _install_cpan {
                 delete $INC{$inc};
             }
 
-            my $rv = do {
-		if ($args{force}) {
-		    CPAN::Shell->force( install => $pkg )
-		} elsif ($args{notest}) {
-		    CPAN::Shell->notest( install => $pkg )
-		} else {
-		    CPAN::Shell->install($pkg)
-		}
-	    };
-
+            my $rv = $args{force} ? CPAN::Shell->force( install => $pkg )
+                                  : CPAN::Shell->install($pkg);
             $rv ||= eval {
                 $CPAN::META->instance( 'CPAN::Distribution', $obj->cpan_file, )
                   ->{install}
@@ -598,50 +550,6 @@ sub _install_cpan {
     return $installed;
 }
 
-sub _install_cpanminus {
-    my @modules   = @{ +shift };
-    my $config    = _cpanminus_config( @{ +shift } );
-    my $installed = 0;
-
-    while ( my ( $pkg, $ver ) = splice( @modules, 0, 2 ) ) {
-        print "*** Installing $pkg...\n";
-
-        MY::preinstall( $pkg, $ver ) or next if defined &MY::preinstall;
-
-        my $success;
-
-        system "cpanm $config $pkg";
-
-        eval "use $pkg $ver ();";
-        $success = $@ ? 0 : 1;
-
-        if ( $success ) {
-            print "*** $pkg successfully installed.\n";
-        } else {
-            print "*** $pkg installation unsuccessful.\n";
-        }
-
-        $installed += $success;
-
-        MY::postinstall( $pkg, $ver, $success ) if defined &MY::postinstall;
-    }
-
-    return $installed;
-}
-
-sub _cpanminus_config {
-    my @config = ();
-    while ( @_ ) {
-        my ($key, $value) = (shift(), shift());
-        if ( $key eq 'force' ) {
-            push @config, '--force' if $value;
-        } elsif ( $key eq 'notest' ) {
-            push @config, '--notest' if $value;
-        }
-    }
-    return join ' ', @config;
-}
-
 sub _has_cpanplus {
     return (
         $HasCPANPLUS = (
@@ -649,18 +557,6 @@ sub _has_cpanplus {
               or _load('CPANPLUS::Shell::Default')
         )
     );
-}
-
-sub _has_cpanminus {
-    require IPC::Open3;
-    require File::Spec;
-    require Symbol;
-
-    my $out = Symbol::gensym;
-
-    IPC::Open3::open3(Symbol::gensym, $out, Symbol::gensym, 'cpanm --version');
-
-    return <$out> =~ /App::cpanminus/;
 }
 
 # make guesses on whether we're under the CPAN installation directory
@@ -867,25 +763,6 @@ sub _make_args {
         : "\$(NOECHO) \$(NOOP)"
     );
 
-    my $deps_list = join( ',', @Missing, @Existing );
-
-    $PostambleActionsUpgradeDeps =
-        "\$(PERL) $0 --config=$config --upgradedeps=$deps_list";
-
-    my $config_notest =
-      join( ',', (UNIVERSAL::isa( $Config, 'HASH' ) ? %{$Config} : @{$Config}),
-	  'notest', 1 )
-      if $Config;
-
-    $PostambleActionsNoTest = (
-        ($missing and not $UnderCPAN)
-        ? "\$(PERL) $0 --config=$config_notest --installdeps=$missing"
-        : "\$(NOECHO) \$(NOOP)"
-    );
-
-    $PostambleActionsUpgradeDepsNoTest =
-        "\$(PERL) $0 --config=$config_notest --upgradedeps=$deps_list";
-
     return %args;
 }
 
@@ -920,38 +797,24 @@ sub Write {
 
 sub postamble {
     $PostambleUsed = 1;
-    my $fragment;
 
-    $fragment .= <<"AUTO_INSTALL" if !$InstallDepsTarget;
+    return <<"END_MAKE";
 
 config :: installdeps
 \t\$(NOECHO) \$(NOOP)
-AUTO_INSTALL
-
-    $fragment .= <<"END_MAKE";
 
 checkdeps ::
 \t\$(PERL) $0 --checkdeps
 
-upgradedeps ::
-\t$PostambleActionsUpgradeDeps
-
-upgradedeps_notest ::
-\t$PostambleActionsUpgradeDepsNoTest
-
 installdeps ::
 \t$PostambleActions
 
-installdeps_notest ::
-\t$PostambleActionsNoTest
-
 END_MAKE
 
-    return $fragment;
 }
 
 1;
 
 __END__
 
-#line 1215
+#line 1071

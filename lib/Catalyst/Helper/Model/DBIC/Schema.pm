@@ -4,7 +4,7 @@ use namespace::autoclean;
 use Moose;
 no warnings 'uninitialized';
 
-our $VERSION = '0.50';
+our $VERSION = '0.51';
 $VERSION = eval $VERSION;
 
 use Carp;
@@ -61,14 +61,15 @@ the generated classes by hand to refine them.
 C<traits> is the list of traits to apply to the model, see
 L<Catalyst::Model::DBIC::Schema> for details.
 
-C<Schema::Loader opts> are described in L</TYPICAL EXAMPLES> below.
+C<Schema::Loader opts> are documented in L<DBIx::Class::Schema::Loader::Base>
+and some examples are given in L</TYPICAL EXAMPLES> below.
 
-C<connect_info> arguments are the same as what
-DBIx::Class::Schema::connect expects, and are storage_type-specific.
-For DBI-based storage, these arguments are the dsn, username,
-password, and connect options, respectively.  These are optional for
-existing Schemas, but required if you use either of the C<create=>
-options.
+C<connect_info> arguments are the same as what L<DBIx::Class::Schema/connect>
+expects, and are storage_type-specific. They are documented in
+L<DBIx::Class::Storage::DBI/connect_info>. For DBI-based storage, these
+arguments are the dsn, username, password, and connect options, respectively.
+These are optional for existing Schemas, but required if you use either of the
+C<create=> options.
 
 username and password can be omitted for C<SQLite> dsns.
 
@@ -289,6 +290,29 @@ sub _read_loader_args {
 
     while (@$args && $args->[0] !~ /^dbi:/i) {
         my ($key, $val) = split /=/, shift(@$args), 2;
+
+        if ($self->_is_struct($val)) {
+            $loader_args{$key} = $val;
+        } elsif ((my @vals = split /,/ => $val) > 1) {
+            $loader_args{$key} = \@vals;
+        } else {
+            $loader_args{$key} = $val;
+        }
+    }
+
+    # Use args after connect_info as loader args as well, because people always
+    # get the order confused.
+    my $i = 1;
+    if ($args->[0] =~ /sqlite/i) {
+        $i++ if $args->[$i] eq '';
+        $i++ if $args->[$i] eq '';
+    }
+    else {
+        $i += 2;
+    }
+
+    while (defined $args->[$i]) {
+        my ($key, $val) = split /=/, $args->[$i++], 2;
 
         if ($self->_is_struct($val)) {
             $loader_args{$key} = $val;
@@ -595,6 +619,19 @@ sub _gen_static_schema {
         $self->loader_args,
         [$self->connect_info]
     );
+
+    require lib;
+    lib->import($schema_dir);
+
+    Class::MOP::load_class($self->schema_class);
+
+    my @sources = $self->schema_class->sources;
+
+    if (not @sources) {
+        warn <<'EOF';
+WARNING: No tables found, did you forget to specify db_schema?
+EOF
+    }
 }
 
 sub _gen_model {

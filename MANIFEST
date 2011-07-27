@@ -27,12 +27,13 @@ t/06c3_issues.t
 t/07connect_info.t
 t/08helper.t
 t/09schema_options.t
+t/10literal_sql_through_accessor.t
 t/lib/AnotherSchemaClass.pm
-t/lib/AnotherSchemaClass/Result/Users.pm
-t/lib/AnotherSchemaClass/ResultSet/Users.pm
+t/lib/AnotherSchemaClass/Result/User.pm
+t/lib/AnotherSchemaClass/ResultSet/User.pm
 t/lib/ASchemaClass.pm
-t/lib/ASchemaClass/Users.pm
+t/lib/ASchemaClass/User.pm
 t/lib/TestAppC3Fail.pm
 t/lib/TestAppC3Fail/Model/DB.pm
 t/lib/TestAppC3Fail/Schema/DB.pm
-t/lib/TestAppC3Fail/Schema/DB/Users.pm
+t/lib/TestAppC3Fail/Schema/DB/User.pm
