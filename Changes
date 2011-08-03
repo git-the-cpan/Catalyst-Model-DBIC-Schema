@@ -1,5 +1,9 @@
 Revision history for Perl extension Catalyst::Model::DBIC::Schema
 
+0.53  Wed Aug  3 03:45:07 UTC 2011
+        - check loader args after connect_info against loader methods and remove
+          them from connect_info
+
 0.52  Thu Jul 28 22:07:38 UTC 2011
         - fix a bug in loader args reading after connect_info (skip structs)
 
