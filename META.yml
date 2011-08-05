@@ -4,8 +4,10 @@ author:
   - 'Brandon L Black C<blblack at gmail.com>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
+  Storable: 0
   Test::Exception: 0
   Test::More: 0.94
+  Test::Requires: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
@@ -22,10 +24,10 @@ no_index:
 provides:
   Catalyst::Helper::Model::DBIC::Schema:
     file: lib/Catalyst/Helper/Model/DBIC/Schema.pm
-    version: 0.53
+    version: 0.54
   Catalyst::Model::DBIC::Schema:
     file: lib/Catalyst/Model/DBIC/Schema.pm
-    version: 0.53
+    version: 0.54
   Catalyst::TraitFor::Model::DBIC::Schema::Caching:
     file: lib/Catalyst/TraitFor/Model/DBIC/Schema/Caching.pm
   Catalyst::TraitFor::Model::DBIC::Schema::Replicated:
@@ -53,4 +55,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://git.shadowcat.co.uk/catagits/Catalyst-Model-DBIC-Schema.git
-version: 0.53
+version: 0.54
