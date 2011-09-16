@@ -3,6 +3,7 @@ abstract: 'DBIx::Class::Schema Model Class'
 author:
   - 'Brandon L Black C<blblack at gmail.com>'
 build_requires:
+  DBD::SQLite: 0
   ExtUtils::MakeMaker: 6.42
   Storable: 0
   Test::Exception: 0
@@ -24,10 +25,10 @@ no_index:
 provides:
   Catalyst::Helper::Model::DBIC::Schema:
     file: lib/Catalyst/Helper/Model/DBIC/Schema.pm
-    version: 0.54
+    version: 0.55
   Catalyst::Model::DBIC::Schema:
     file: lib/Catalyst/Model/DBIC/Schema.pm
-    version: 0.54
+    version: 0.55
   Catalyst::TraitFor::Model::DBIC::Schema::Caching:
     file: lib/Catalyst/TraitFor/Model/DBIC/Schema/Caching.pm
   Catalyst::TraitFor::Model::DBIC::Schema::Replicated:
@@ -55,4 +56,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://git.shadowcat.co.uk/catagits/Catalyst-Model-DBIC-Schema.git
-version: 0.54
+version: 0.55
