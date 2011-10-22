@@ -23,8 +23,8 @@ my (
     $UpgradeDeps
 );
 my ( $PostambleActions, $PostambleActionsNoTest, $PostambleActionsUpgradeDeps,
-    $PostambleActionsUpgradeDepsNoTest, $PostambleActionsDepsList,
-    $PostambleActionsAllDepsList, $PostambleUsed, $NoTest);
+    $PostambleActionsUpgradeDepsNoTest, $PostambleActionsListDeps,
+    $PostambleActionsListAllDeps, $PostambleUsed, $NoTest);
 
 # See if it's a testing or non-interactive session
 _accept_default( $ENV{AUTOMATED_TESTING} or ! -t STDIN ); 
@@ -828,13 +828,13 @@ sub _make_args {
     $PostambleActionsUpgradeDepsNoTest =
         "\$(PERL) $0 --config=$config_notest --upgradedeps=$deps_list";
 
-    $PostambleActionsDepsList =
+    $PostambleActionsListDeps =
         '@$(PERL) -le "print for @ARGV" '
             . join(' ', map $Missing[$_], grep $_ % 2 == 0, 0..$#Missing);
 
     my @all = (@Missing, @Existing);
 
-    $PostambleActionsAllDepsList =
+    $PostambleActionsListAllDeps =
         '@$(PERL) -le "print for @ARGV" '
             . join(' ', map $all[$_], grep $_ % 2 == 0, 0..$#all);
 
@@ -897,11 +897,11 @@ upgradedeps ::
 upgradedeps_notest ::
 \t$PostambleActionsUpgradeDepsNoTest
 
-depslist ::
-\t$PostambleActionsDepsList
+listdeps ::
+\t$PostambleActionsListDeps
 
-alldepslist ::
-\t$PostambleActionsAllDepsList
+listalldeps ::
+\t$PostambleActionsListAllDeps
 
 END_MAKE
 

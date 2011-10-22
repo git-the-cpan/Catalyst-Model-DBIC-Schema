@@ -271,6 +271,7 @@ CONFIG PARAMETERS
     Catalyst::TraitFor::Model::DBIC::Schema::Caching
     Catalyst::TraitFor::Model::DBIC::Schema::Replicated
     Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy
+    Catalyst::TraitFor::Model::DBIC::Schema::PerRequestSchema
 
   storage_type
     Allows the use of a different "storage_type" than what is set in your
@@ -431,6 +432,7 @@ SEE ALSO
     Catalyst::TraitFor::Model::DBIC::Schema::Caching,
     Catalyst::TraitFor::Model::DBIC::Schema::Replicated,
     Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy,
+    Catalyst::TraitFor::Model::DBIC::Schema::PerRequestSchema,
     Catalyst::TraitFor::Model::DBIC::Schema::QueryLog
 
 AUTHOR
@@ -450,6 +452,8 @@ CONTRIBUTORS
     ozum: Ozum Eldogan "ozum@ozum.net"
 
     Pavel I. Shaydo "zwon@trinitum.org"
+
+    t0m: Tomas Doran <bobtfish@bobtfish.net>
 
 COPYRIGHT
     Copyright (c) 2006 - 2010 the Catalyst::Model::DBIC::Schema "AUTHOR" and

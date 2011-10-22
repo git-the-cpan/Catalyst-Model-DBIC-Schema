@@ -14,6 +14,7 @@ lib/Catalyst/Helper/Model/DBIC/Schema.pm
 lib/Catalyst/Model/DBIC/Schema.pm
 lib/Catalyst/Model/DBIC/Schema/Types.pm
 lib/Catalyst/TraitFor/Model/DBIC/Schema/Caching.pm
+lib/Catalyst/TraitFor/Model/DBIC/Schema/PerRequestSchema.pm
 lib/Catalyst/TraitFor/Model/DBIC/Schema/Replicated.pm
 lib/Catalyst/TraitFor/Model/DBIC/Schema/SchemaProxy.pm
 Makefile.PL
