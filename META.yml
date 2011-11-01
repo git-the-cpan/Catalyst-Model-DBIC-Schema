@@ -25,10 +25,10 @@ no_index:
 provides:
   Catalyst::Helper::Model::DBIC::Schema:
     file: lib/Catalyst/Helper/Model/DBIC/Schema.pm
-    version: 0.58
+    version: 0.59
   Catalyst::Model::DBIC::Schema:
     file: lib/Catalyst/Model/DBIC/Schema.pm
-    version: 0.58
+    version: 0.59
   Catalyst::TraitFor::Model::DBIC::Schema::Caching:
     file: lib/Catalyst/TraitFor/Model/DBIC/Schema/Caching.pm
   Catalyst::TraitFor::Model::DBIC::Schema::PerRequestSchema:
@@ -49,6 +49,7 @@ requires:
   Hash::Merge: 0
   List::MoreUtils: 0
   Moose: 1.12
+  MooseX::MarkAsMethods: 0.13
   MooseX::NonMoose: 0.16
   MooseX::Types: 0
   Tie::IxHash: 0
@@ -59,4 +60,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://git.shadowcat.co.uk/catagits/Catalyst-Model-DBIC-Schema.git
-version: 0.58
+version: 0.59
