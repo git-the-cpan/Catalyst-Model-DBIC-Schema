@@ -1,3 +1,4 @@
+.gitignore
 Changes
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
@@ -20,6 +21,8 @@ lib/Catalyst/TraitFor/Model/DBIC/Schema/SchemaProxy.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
+MYMETA.json
+MYMETA.yml
 README
 t/01use.t
 t/02pod.t

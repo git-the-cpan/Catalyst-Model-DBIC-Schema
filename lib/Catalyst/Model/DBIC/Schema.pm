@@ -5,7 +5,7 @@ use mro 'c3';
 extends 'Catalyst::Model';
 with 'CatalystX::Component::Traits';
 
-our $VERSION = '0.59';
+our $VERSION = '0.60';
 $VERSION = eval $VERSION;
 
 use namespace::autoclean;
@@ -676,7 +676,7 @@ ozum: Ozum Eldogan C<ozum@ozum.net>
 
 Pavel I. Shaydo C<zwon@trinitum.org>
 
-t0m: Tomas Doran <bobtfish@bobtfish.net>
+SineSwiper: Brendan Byrd <byrd.b@insightcom.com>
 
 =head1 COPYRIGHT
 
