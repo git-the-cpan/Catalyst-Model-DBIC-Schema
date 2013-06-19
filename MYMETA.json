@@ -4,7 +4,7 @@
       "Brandon L Black C<blblack at gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Module::Install version 1.06, CPAN::Meta::Converter version 2.120630",
+   "generated_by" : "Module::Install version 1.06, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -65,8 +65,9 @@
          "http://dev.perl.org/licenses/"
       ],
       "repository" : {
+         "type" : "git",
          "url" : "git://git.shadowcat.co.uk/catagits/Catalyst-Model-DBIC-Schema.git"
       }
    },
-   "version" : "0.60"
+   "version" : "0.61"
 }

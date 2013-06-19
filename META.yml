@@ -23,21 +23,6 @@ no_index:
   directory:
     - inc
     - t
-provides:
-  Catalyst::Helper::Model::DBIC::Schema:
-    file: lib/Catalyst/Helper/Model/DBIC/Schema.pm
-    version: 0.60
-  Catalyst::Model::DBIC::Schema:
-    file: lib/Catalyst/Model/DBIC/Schema.pm
-    version: 0.60
-  Catalyst::TraitFor::Model::DBIC::Schema::Caching:
-    file: lib/Catalyst/TraitFor/Model/DBIC/Schema/Caching.pm
-  Catalyst::TraitFor::Model::DBIC::Schema::PerRequestSchema:
-    file: lib/Catalyst/TraitFor/Model/DBIC/Schema/PerRequestSchema.pm
-  Catalyst::TraitFor::Model::DBIC::Schema::Replicated:
-    file: lib/Catalyst/TraitFor/Model/DBIC/Schema/Replicated.pm
-  Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy:
-    file: lib/Catalyst/TraitFor/Model/DBIC/Schema/SchemaProxy.pm
 requires:
   Carp::Clan: 0
   Catalyst::Component::InstancePerContext: 0
@@ -61,4 +46,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://git.shadowcat.co.uk/catagits/Catalyst-Model-DBIC-Schema.git
-version: 0.60
+version: 0.61
