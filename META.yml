@@ -34,10 +34,12 @@ requires:
   DBIx::Class::Schema::Loader: 0.04005
   Hash::Merge: 0
   List::MoreUtils: 0
+  Module::Runtime: 0.012
   Moose: 1.12
   MooseX::MarkAsMethods: 0.13
   MooseX::NonMoose: 0.16
   MooseX::Types: 0
+  MooseX::Types::LoadableClass: 0.009
   Tie::IxHash: 0
   Try::Tiny: 0
   namespace::autoclean: 0.09
@@ -46,4 +48,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://git.shadowcat.co.uk/catagits/Catalyst-Model-DBIC-Schema.git
-version: 0.61
+version: 0.62
