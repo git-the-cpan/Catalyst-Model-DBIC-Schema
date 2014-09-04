@@ -273,6 +273,15 @@ CONFIG PARAMETERS
     Catalyst::TraitFor::Model::DBIC::Schema::SchemaProxy
     Catalyst::TraitFor::Model::DBIC::Schema::PerRequestSchema
 
+  compose_namespaces
+    This model calls "compose_namespaces" in DBIx::Class::Schema by default
+    to install classes into the model namespaces. You can turn that off by
+    setting this attribute to false. Default is true.
+
+  install_model_shortcuts
+    If you don't want shortcut models so you can do e.g.
+    "$c->model('DB::Book')" set this attribute to false, Default is true.
+
   storage_type
     Allows the use of a different "storage_type" than what is set in your
     "schema_class" (which in turn defaults to "::DBI" if not set in current
@@ -331,10 +340,13 @@ METHODS
 
   composed_schema
     Accessor which returns the composed schema, which has no connection
-    info, which was used in constructing the "schema" above. Useful for
-    creating new connections based on the same schema/model. There are
-    direct shortcuts from the model object for composed_schema->clone and
+    info, which was used in constructing the "schema". Useful for creating
+    new connections based on the same schema/model. There are direct
+    shortcuts from the model object for composed_schema->clone and
     composed_schema->connect
+
+    If "compose_namespaces" is not true, "composed_schema" is equivalent to
+    "$model->schema_class->clone".
 
   clone
     Shortcut for ->composed_schema->clone
